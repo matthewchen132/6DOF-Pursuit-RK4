@@ -1,0 +1,40 @@
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_366ce && [1/2] Building C object CMakeFiles/cmTC_366ce.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_366ce
+FAILED: cmTC_366ce 
+: && /usr/bin/gcc -DCHECK_FUNCTION_EXISTS=sgemm_  CMakeFiles/cmTC_366ce.dir/CheckFunctionExists.c.o -o cmTC_366ce   && :
+/usr/bin/ld: CMakeFiles/cmTC_366ce.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_083a3 && [1/2] Building C object CMakeFiles/cmTC_083a3.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_083a3
+FAILED: cmTC_083a3 
+: && /usr/bin/gcc -DCHECK_FUNCTION_EXISTS=cheev_  CMakeFiles/cmTC_083a3.dir/CheckFunctionExists.c.o -o cmTC_083a3  /usr/lib/x86_64-linux-gnu/libblas.so  -lm  -ldl && :
+/usr/bin/ld: CMakeFiles/cmTC_083a3.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `cheev_'
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/ninja cmTC_8d063 && [1/2] Building C object CMakeFiles/cmTC_8d063.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_8d063
+FAILED: cmTC_8d063 
+: && /usr/bin/gcc -DCHECK_FUNCTION_EXISTS=cheev_  CMakeFiles/cmTC_8d063.dir/CheckFunctionExists.c.o -o cmTC_8d063  /usr/lib/x86_64-linux-gnu/liblapack.so  /usr/lib/x86_64-linux-gnu/libblas.so  -fortranlibs && :
+gcc: error: unrecognized command-line option ‘-fortranlibs’
+ninja: build stopped: subcommand failed.
+
+
+

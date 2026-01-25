@@ -1,0 +1,220 @@
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_be199/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_be199.dir/build.make CMakeFiles/cmTC_be199.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_be199.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=sgemm_ -o CMakeFiles/cmTC_be199.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_be199
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_be199.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=sgemm_ CMakeFiles/cmTC_be199.dir/CheckFunctionExists.c.o -o cmTC_be199 
+/usr/bin/ld: CMakeFiles/cmTC_be199.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_be199.dir/build.make:99: cmTC_be199] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_be199/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_bbb11/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_bbb11.dir/build.make CMakeFiles/cmTC_bbb11.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bbb11.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_bbb11.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_bbb11
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bbb11.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_bbb11.dir/CheckFunctionExists.c.o -o cmTC_bbb11  /usr/lib/x86_64-linux-gnu/libblas.so -lm -ldl 
+/usr/bin/ld: CMakeFiles/cmTC_bbb11.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `cheev_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_bbb11.dir/build.make:100: cmTC_bbb11] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_bbb11/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_21077/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_21077.dir/build.make CMakeFiles/cmTC_21077.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_21077.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_21077.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_21077
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_21077.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_21077.dir/CheckFunctionExists.c.o -o cmTC_21077  /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/libblas.so -fortranlibs 
+cc: error: unrecognized command-line option ‘-fortranlibs’
+gmake[1]: *** [CMakeFiles/cmTC_21077.dir/build.make:101: cmTC_21077] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_21077/fast] Error 2
+
+
+
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_7e759/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_7e759.dir/build.make CMakeFiles/cmTC_7e759.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7e759.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=sgemm_ -o CMakeFiles/cmTC_7e759.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_7e759
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7e759.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=sgemm_ CMakeFiles/cmTC_7e759.dir/CheckFunctionExists.c.o -o cmTC_7e759 
+/usr/bin/ld: CMakeFiles/cmTC_7e759.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_7e759.dir/build.make:99: cmTC_7e759] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_7e759/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_2eb67/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_2eb67.dir/build.make CMakeFiles/cmTC_2eb67.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2eb67.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_2eb67.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_2eb67
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2eb67.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_2eb67.dir/CheckFunctionExists.c.o -o cmTC_2eb67  /usr/lib/x86_64-linux-gnu/libblas.so -lm -ldl 
+/usr/bin/ld: CMakeFiles/cmTC_2eb67.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `cheev_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_2eb67.dir/build.make:100: cmTC_2eb67] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_2eb67/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_89f5d/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_89f5d.dir/build.make CMakeFiles/cmTC_89f5d.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_89f5d.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_89f5d.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_89f5d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_89f5d.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_89f5d.dir/CheckFunctionExists.c.o -o cmTC_89f5d  /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/libblas.so -fortranlibs 
+cc: error: unrecognized command-line option ‘-fortranlibs’
+gmake[1]: *** [CMakeFiles/cmTC_89f5d.dir/build.make:101: cmTC_89f5d] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_89f5d/fast] Error 2
+
+
+
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_f6051/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_f6051.dir/build.make CMakeFiles/cmTC_f6051.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_f6051.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=sgemm_ -o CMakeFiles/cmTC_f6051.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_f6051
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f6051.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=sgemm_ CMakeFiles/cmTC_f6051.dir/CheckFunctionExists.c.o -o cmTC_f6051 
+/usr/bin/ld: CMakeFiles/cmTC_f6051.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_f6051.dir/build.make:99: cmTC_f6051] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_f6051/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_8284d/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_8284d.dir/build.make CMakeFiles/cmTC_8284d.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_8284d.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_8284d.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_8284d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8284d.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_8284d.dir/CheckFunctionExists.c.o -o cmTC_8284d  /usr/lib/x86_64-linux-gnu/libblas.so -lm -ldl 
+/usr/bin/ld: CMakeFiles/cmTC_8284d.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `cheev_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_8284d.dir/build.make:100: cmTC_8284d] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_8284d/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_28466/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_28466.dir/build.make CMakeFiles/cmTC_28466.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_28466.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_28466.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_28466
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_28466.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_28466.dir/CheckFunctionExists.c.o -o cmTC_28466  /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/libblas.so -fortranlibs 
+cc: error: unrecognized command-line option ‘-fortranlibs’
+gmake[1]: *** [CMakeFiles/cmTC_28466.dir/build.make:101: cmTC_28466] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_28466/fast] Error 2
+
+
+
+Determining if the function sgemm_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_43f40/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_43f40.dir/build.make CMakeFiles/cmTC_43f40.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_43f40.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=sgemm_ -o CMakeFiles/cmTC_43f40.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_43f40
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_43f40.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=sgemm_ CMakeFiles/cmTC_43f40.dir/CheckFunctionExists.c.o -o cmTC_43f40 
+/usr/bin/ld: CMakeFiles/cmTC_43f40.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `sgemm_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_43f40.dir/build.make:99: cmTC_43f40] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_43f40/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_4d37f/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_4d37f.dir/build.make CMakeFiles/cmTC_4d37f.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4d37f.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_4d37f.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_4d37f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4d37f.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_4d37f.dir/CheckFunctionExists.c.o -o cmTC_4d37f  /usr/lib/x86_64-linux-gnu/libblas.so -lm -ldl 
+/usr/bin/ld: CMakeFiles/cmTC_4d37f.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `cheev_'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_4d37f.dir/build.make:100: cmTC_4d37f] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_4d37f/fast] Error 2
+
+
+
+Determining if the function cheev_ exists failed with the following output:
+Change Dir: /home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_73977/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_73977.dir/build.make CMakeFiles/cmTC_73977.dir/build
+gmake[1]: Entering directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_73977.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=cheev_ -o CMakeFiles/cmTC_73977.dir/CheckFunctionExists.c.o -c /usr/share/cmake-3.22/Modules/CheckFunctionExists.c
+Linking C executable cmTC_73977
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_73977.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=cheev_ CMakeFiles/cmTC_73977.dir/CheckFunctionExists.c.o -o cmTC_73977  /usr/lib/x86_64-linux-gnu/liblapack.so /usr/lib/x86_64-linux-gnu/libblas.so -fortranlibs 
+cc: error: unrecognized command-line option ‘-fortranlibs’
+gmake[1]: *** [CMakeFiles/cmTC_73977.dir/build.make:101: cmTC_73977] Error 1
+gmake[1]: Leaving directory '/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_73977/fast] Error 2
+
+
+

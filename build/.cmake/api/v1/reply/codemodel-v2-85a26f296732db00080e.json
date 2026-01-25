@@ -1,0 +1,163 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.20"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "_deps/matplotplusplus-build",
+					"childIndexes" : 
+					[
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-_deps.matplotplusplus-build-Debug-fb75d9ff123cc1fe6978.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-src"
+				},
+				{
+					"build" : "_deps/matplotplusplus-build/source",
+					"childIndexes" : 
+					[
+						3,
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-_deps.matplotplusplus-build.source-Debug-7579b66f1604640b4fe5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-src/source"
+				},
+				{
+					"build" : "_deps/matplotplusplus-build/source/3rd_party",
+					"jsonFile" : "directory-_deps.matplotplusplus-build.source.3rd_party-Debug-03a09b5857e63c5552e7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-src/source/3rd_party",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "_deps/matplotplusplus-build/source/matplot",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-_deps.matplotplusplus-build.source.matplot-Debug-9515e232535d01e62551.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.15"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-src/source/matplot",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "missile_sim",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "Matplot++",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 4,
+					"id" : "matplot::@1a212f9e42d2a4237136",
+					"jsonFile" : "target-matplot-Debug-6e063eb566b65be4a42a.json",
+					"name" : "matplot",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "nodesoup::@c7e29b13f31b6afc69a3",
+					"jsonFile" : "target-nodesoup-Debug-974ea93390bc8d80818a.json",
+					"name" : "nodesoup",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "simulation::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-simulation-Debug-bde09913f5ae86883399.json",
+					"name" : "simulation",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build",
+		"source" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
