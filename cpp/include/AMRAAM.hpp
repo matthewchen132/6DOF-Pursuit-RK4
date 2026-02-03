@@ -4,25 +4,40 @@
 #include <vector>
 #include <cmath>
 
-class AMRAAM{
 
+struct PNresult{ // data from Pro-nav
+    bool collided;
+    double dLOS_dt;
+    double v_closing;
+    double a_norm;
+    double theta_los 
+};
+
+struct a_norm_vec2d{ //
+    double a_nx;
+    double a_ny;
+};
+
+struct a_norm_vec3d{ //
+    double a_nx;
+    double a_ny;
+    double a_nz;
+};
+
+class AMRAAM{
     public:
         using State6 = Eigen::Matrix<double, 6, 1>;
-        State6 X_2d = {0,0,0,0,0,0};
-        // double phi = atan2(X[5], X[4]); // angle about X
-        // double theta = atan2(X[5], X[3]); // angle about Y
-        double psi = X_2d(4); // angle about Z
-        std::vector<double> x_data, y_data;
-        State6 dXdt_2d(double T, const State6& X_2d) const;
-        State6 pro_nav(double Kp, const State6& X_Missile, const State6& X_Interceptor);
-
-
+        State6 X_2d = {0,0,100,0,0,0};
+        State6 dXdt_2d(double T, const State6& X_2d, double a_norm) const;
+        PNresult pro_nav_2d(double N, const State6& X_missile, const State6& X_targ);
+        // bool pure_pursuit(double LOS_to_targ, auto lookahead_dist, L); // if LOS is big, use pure pursuit to get on track
     private:
-        double m_evader = 1615; // kg
-        double thrust = 10000; //N
+        double m_missile = 1000; // kg
+        double v_mag = 100.0; // m/s
+        double thrust = 8000; //N
         double length = 10; // meters
         double r = .1; // meters
-        double MOI = 0.5*(m_evader)*r*r*1.1; // (.5*MR^2)*1.1, approximated with a cylinder, 
+        double MOI = 0.5*(m_missile)*r*r*1.1; // (.5*MR^2)*1.1, will be turned into a 3x3 matrix of MOI (follow Wiley)
         double A = 1.0; //m^2
         double Cd = 0.08;
         double density = 1.2754; // kg / m^3

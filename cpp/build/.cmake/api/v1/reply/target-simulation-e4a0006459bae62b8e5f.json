@@ -55,9 +55,6 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g"
-				},
-				{
 					"fragment" : "-std=gnu++20"
 				}
 			],
@@ -80,11 +77,11 @@
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-src/source"
+					"path" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/_deps/matplotplusplus-src/source"
 				},
 				{
 					"backtrace" : 2,
-					"path" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/build/_deps/matplotplusplus-build/source/matplot"
+					"path" : "/home/matthewchen132/6DOF_Missile_Pursuit_RK4/cpp/build/_deps/matplotplusplus-build/source/matplot"
 				},
 				{
 					"backtrace" : 4,
@@ -127,10 +124,6 @@
 	{
 		"commandFragments" : 
 		[
-			{
-				"fragment" : "-g",
-				"role" : "flags"
-			},
 			{
 				"fragment" : "",
 				"role" : "flags"

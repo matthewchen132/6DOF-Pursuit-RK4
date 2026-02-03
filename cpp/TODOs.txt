@@ -1,0 +1,19 @@
+Toggleable modes for testing vs high fidelity:
+ - Cd = 0,
+
+Must figure out:
+ - pronav directions for left and right turn
+ - vibed mass properties/accel ratios
+
+plotting:
+ - vectors of force applications
+ - vectorize and matrix everything
+
+Highest Prio:
+ - vectorize pro_nav and forces for 6dof
+ - 6DOF MOI model (Wiley)
+ - Monte Carlos and data extraction
+ - DYNAMICS:
+    define correct initial vel (amraam faster)
+    prevent divisions by zero
+    complementary filter between pronav + pure pursuit 
