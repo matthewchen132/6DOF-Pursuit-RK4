@@ -11,7 +11,6 @@ find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
 add_executable(simulation 
             src/simulation.cpp 
-            src/models/wind_vector.cpp 
             src/models/evader.cpp 
             src/models/AMRAAM.cpp
             src/main.cpp)

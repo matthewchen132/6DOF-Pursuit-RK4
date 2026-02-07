@@ -27,7 +27,10 @@ struct a_norm_vec3d{ //
 class AMRAAM{
     public:
         using State6 = Eigen::Matrix<double, 6, 1>;
+        using StateFull = Eigen::Matrix<double, 10, 1>;
+
         State6 X_2d = {0,0,100,0,0,0};
+        StateFull X = {0,0,0,0,100,0,Eigen::Quaterniond q};
         State6 dXdt_2d(double T, const State6& X_2d, double a_norm) const;
         PNresult pro_nav_2d(double N, const State6& X_missile, const State6& X_targ);
         // bool pure_pursuit(double LOS_to_targ, auto lookahead_dist, L); // if LOS is big, use pure pursuit to get on track

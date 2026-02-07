@@ -1,10 +1,12 @@
 #include "simulation.hpp"
-#include "AMRAAM.hpp"
-#include "evader.hpp"
-#include <stdio.h>
-#include <iostream>
+#include "flight_sim_object_headers/AMRAAM.hpp"
+#include "flight_sim_object_headers/evader.hpp"
 #include "Common.hpp"
+#include "flight_sim_object_headers/wind_vector.hpp"
+import <stdio.h>;
+import <iostream>;
 #include <matplot/matplot.h>
+#include "state_full.hpp"
 
 void plot_everything(auto x_log1, auto y_log1, auto x_log_missile, auto y_log_missile, auto t_log1, auto a_norm, auto dLOS_dt, auto v_closing){
     //make a matrix later
@@ -39,6 +41,7 @@ void plot_everything(auto x_log1, auto y_log1, auto x_log_missile, auto y_log_mi
 int main(){
     monte_carlo_params mc{};
     Evader target1{};
+    wind wind{}; 
     target1.X_2d = {100,100,10,10,10,10};
     AMRAAM missile1{};
     missile1.X_2d = {0,0,30,0,0,0};
