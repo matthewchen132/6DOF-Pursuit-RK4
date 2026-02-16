@@ -1,21 +1,27 @@
 #pragma once
-
-#include <Eigen/Dense>
 #include <vector>
 #include <cmath>
 
 class Evader{
+
+struct State {
+    Eigen::Vector3d pos = Eigen::Vector3d::Zero();
+    Eigen::Vector3d vel = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond attitude = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d omega = Eigen::Vector3d::Zero();
     
+    void normalize() {
+        attitude.normalize();
+    }
+};
+
     public:
-        using State6 = Eigen::Matrix<double, 6, 1>;
-        Eigen::Matrix<double, 10,1> X = {0,0,0,0,0,0,0,0,0,0};
-        State6 X_2d = {0,100,10,10,0,0};
-        double phi = atan2(X[5], X[4]); // angle about X
-        double theta = atan2(X[5], X[3]); // angle about Y
-        double psi = atan2(X[4], X[3]); // angle about Z
-        State6 dXdt_2d(double T, const State6& X_2d) const;
+        State X;
+        State dXdt_2d(double T, const State& X_2d) const;
+
 
     private:
+        Eigen::Matrix3d J = Eigen::Matrix3d::Zero();
         double m_evader = 1615; // kg
         double thrust = 5000; //N
         double length = 10; // meters

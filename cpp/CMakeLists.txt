@@ -5,9 +5,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(pybind11) # not needed, but convenient for python <-> C++
-find_package(Gnuplot)
-find_package(Eigen3 3.4 REQUIRED NO_MODULE)
+find_package(pybind11 QUIET) # not needed, but convenient for python <-> C++
+find_package(Gnuplot QUIET)
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 add_executable(simulation 
             src/simulation.cpp 
@@ -20,6 +20,12 @@ target_include_directories(simulation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/includ
 
 # add libraries to main simulation
 target_link_libraries(simulation PRIVATE Eigen3::Eigen)
+target_precompile_headers(simulation PRIVATE
+  <Eigen/Dense>
+  <Eigen/Geometry>
+  <vector>
+  <cmath>
+)
 
 # Plotting Capability
 include(FetchContent)
@@ -29,7 +35,6 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus.git
   GIT_TAG v1.2.1   # or latest stable
 )
-
 FetchContent_MakeAvailable(matplotplusplus)
 
 target_link_libraries(simulation PRIVATE Matplot++::matplot)
