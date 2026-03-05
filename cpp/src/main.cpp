@@ -16,10 +16,14 @@ int main(){
     AMRAAM missile{};
     // missile1.X = {100,0,30,10,0,0};
     // target1.X = {50,70,10,10,10,10};
-    missile.X.pos = {0,0,0};
-    missile.X.vel = {30,10,0};
-    target1.X.pos = {50,70,0};
-    target1.X.vel = {10,0,0};
+    missile.X.pos = {10,70,10};
+    missile.X.vel = {10,10,10};
+    missile.X.q = {1.0,0,0,0};
+
+    target1.X.pos = {50,70,10};
+    target1.X.vel = {10,10,10};
+    missile.X.q = {1.0,0,0,0};
+
 
 
     bool missile_collided = false;
@@ -29,22 +33,22 @@ int main(){
 
     while(mc.T <= 30.0){
         t_log1.push_back(mc.T);
-        x_log1.push_back(target1.X(0));
-        y_log1.push_back(target1.X(1));
-        x_log_missile.push_back(missile.X(0));
-        y_log_missile.push_back(missile.X(1));
+        x_log1.push_back(target1.X.pos(0));
+        y_log1.push_back(target1.X.pos(1));
+        x_log_missile.push_back(missile.X.pos(0));
+        y_log_missile.push_back(missile.X.pos(1));
         const PNresult PN = missile.pro_nav_2d(5.0, missile.X, target1.X, collision_radius);
 
         target1.X = rk4_step(
             target1.X, mc, 
-            [&](double t, const Evader::State& X) { 
-                return target1.dXdt_2d(t, X); 
+            [&](double t, const State& X) { 
+                return target1.dXdt(t, X); 
             });
 
         missile.X = rk4_step(
-            missile1.X, mc,
-            [&](double t, const AMRAAM::State& X) { 
-                return missile1.dXdt_2d(t, X, PN.a_norm); 
+            missile.X, mc,
+            [&](double t, const State& X) { 
+                return missile.dXdt(t, X, PN.a_norm); 
             });
 
         a_norm.push_back(PN.a_norm);
@@ -61,10 +65,10 @@ int main(){
     }
     //Plotting
     matplot::figure();
-    auto targ_plot = matplot::plot(x_log1, y_log1, "r-");
+    auto targ_plot = matplot::plot(x_log1, y_log1, "r");
     targ_plot->display_name("Target Location");
     matplot::hold(matplot::on);
-    auto m_plot = matplot::plot(x_log_missile, y_log_missile, "b-");
+    auto m_plot = matplot::plot(x_log_missile, y_log_missile, "b");
     m_plot->display_name("Missile Location");
     matplot::xlabel("X position (m)");
     matplot::ylabel("Y position (m)");
@@ -73,5 +77,8 @@ int main(){
     matplot::show();
 
     std::cout << "End of Simulation" << std::endl;
+    std::cout << target1.X.pos(1) << std::endl;
+    std::cout << missile.X.pos(1) << std::endl;
+
     return 0;
 }

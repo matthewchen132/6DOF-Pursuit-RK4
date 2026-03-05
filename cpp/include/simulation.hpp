@@ -3,6 +3,7 @@
 #include "Common.hpp"
 #include <initializer_list>
 #include <matplot/matplot.h>
+#include <Eigen/Geometry>
 
 struct monte_carlo_params{
     int i = 0;
@@ -22,8 +23,14 @@ State rk4_step(State X, monte_carlo_params& mc, deriv&& dXdt){ // passes in stat
     return X;
 }  
 
-Euler::Quaterniond euler_to_quat(double u, double v, double w){
-    quaternion q;
+Eigen::Quaterniond velocities_to_quat(double u, double v, double w){
+    /*
+    u,v,w is velocities in r,p,y directions in the body frame.
+    takes current v
+    */
+    Eigen::Quaternion q = Eigen::Quaterniond::Identity();
+        Eigen::AngleAxisd();
+
     return q;
 }
 
