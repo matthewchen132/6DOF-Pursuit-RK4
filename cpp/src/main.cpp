@@ -28,8 +28,9 @@ int main(){
 
     bool missile_collided = false;
     std::vector<double> t_log1, x_log1, y_log1, 
-                        x_log_missile, y_log_missile, 
+                        x_log_missile, y_log_missile,
                         a_norm, dLOS_dt, v_closing;
+    // Eigen::Matrix3d( // maybe a better way to implement the logs. Add rows of state rather than individual times, positions.
 
     while(mc.T <= 30.0){
         t_log1.push_back(mc.T);
@@ -44,12 +45,14 @@ int main(){
             [&](double t, const State& X) { 
                 return target1.dXdt(t, X); 
             });
+        target1.X.q.normalize(); // normalize quaternions after each loop
 
         missile.X = rk4_step(
             missile.X, mc,
             [&](double t, const State& X) { 
                 return missile.dXdt(t, X, PN.a_norm); 
             });
+        missile.X.q.normalize();
 
         a_norm.push_back(PN.a_norm);
         dLOS_dt.push_back(PN.dLOS_dt);

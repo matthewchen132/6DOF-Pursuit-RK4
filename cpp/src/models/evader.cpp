@@ -43,5 +43,13 @@ State Evader::dXdt(double T, const State& X) const{ // const function means it w
     Eigen::Vector3d w = X.omega; // angular velocity
     Eigen::Vector3d ang_accel = J * w;
     dXdt.omega = J.ldlt().solve(M_b - w.cross(ang_accel));
+    
+
+    /* current goals:
+     
+    1) current issue with omega: implement a controller to keep me from rotating like crazy
+    2) this is a good time to implement wind
+    3) implement onto Missile interceptor as well.
+    */
     return dXdt;
 }
