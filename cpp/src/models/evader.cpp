@@ -26,26 +26,25 @@ State Evader::dXdt(double T, const State& X) const{ // const function means it w
     dXdt.pos = q_bi * X.vel;
     // ---- Thrust ---- (Inertial)
     Eigen::Vector3d T_b(thrust,0,0);
-    Eigen::Vector3d T_ned = q_bi * T_b;
+    Eigen::Vector3d T_w = q_bi * T_b;
     // -- Velocities --
     const double v_mag = std::max((X.vel.norm()), 1e-6);
     Eigen::Vector3d v_hats = X.vel / v_mag;
     Eigen::Vector3d g_i(0,0,9.81);
     Eigen::Vector3d g_b = q_bi.conjugate() * g_i;
     // -- Drag --
-    Eigen::Vector3d dyn_pressure;
-    dyn_pressure.setOnes();
-    dyn_pressure = dyn_pressure * 0.5 * density * v_mag * v_mag;
+    double dyn_pressure = 0.5 * density * v_mag * v_mag;
     // double dyn_pressure = 0.5 * density * v_mag * v_mag;
-    Eigen::Vector3d F_drag = dyn_pressure * Cd * A * v_hats;
+    Eigen::Vector3d F_drag;
+    F_drag = -Cd * A * dyn_pressure * v_hats;
     // ---- dXdt.vel ---- (Body)
-    Eigen::Vector3d vel_b = (1.0/m_evader) * (T_ned - F_drag) - X.omega.cross(X.vel) + g_b;
-    dXdt.vel = vel_b;
+    Eigen::Vector3d v_b = (1.0/m_evader) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b;
+    dXdt.vel = v_b;
     // ---- dXdt.omega ---- (Body)
     Eigen::Vector3d M_b = r_cp_cg.cross(F_drag); // - Moments (M) - 
     Eigen::Vector3d w = X.omega; // angular velocity
-    Eigen::Vector3d ang_accel = J * w;
-    dXdt.omega = J.ldlt().solve(M_b + w.cross(ang_accel));
+    Eigen::Vector3d ang_momentum = J * w;
+    dXdt.omega = J.ldlt().solve(M_b + w.cross(ang_momentum));
     /* current goals:
     1) current issue with omega: implement a controller to keep me from rotating like crazy
     2) this is a good time to implement wind

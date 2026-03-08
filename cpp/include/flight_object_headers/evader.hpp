@@ -5,17 +5,17 @@
 
 class Evader{
     private:
-        double m_evader = 1615; // kg
-        double length = 10.0; // meters
-        double r = .1; // meters
-        double MOI = 0.5*(m_evader)*r*r*1.1; // (.5*MR^2)*1.1, approximated with a cylinder,        
+        const double m_evader = 9298.64; // kg
+        const double length = 10.0; // meters
+        const double r = .1; // meters
+        const double MOI = 0.5*(m_evader)*r*r*1.1; // (.5*MR^2)*1.1, approximated with a cylinder,        
     public:
         State X;
         State dXdt(double T, const State& X_2d) const;
         double A = 1.0; // m^2
         double Cd = 0.08;
         double density = 1.2754; // kg / m^3
-        double thrust = 5000; // N
+        double thrust = 120000; // N
         // roughly modeled after an F-16
         Eigen::Vector3d r_cp_cg = Eigen::Vector3d(-length, 0.0, 0.0); // always in line in pitch direction (Body frame)
         const double Jxz = 1331.4132386;
