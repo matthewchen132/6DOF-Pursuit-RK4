@@ -23,14 +23,19 @@ State rk4_step(State X, monte_carlo_params& mc, deriv&& dXdt){ // passes in stat
     return X;
 }  
 
-Eigen::Quaterniond velocities_to_quat(double u, double v, double w){
-    /*
-    u,v,w is velocities in r,p,y directions in the body frame.
-    takes current v
-    */
-    Eigen::Quaternion q = Eigen::Quaterniond::Identity();
-        Eigen::AngleAxisd();
-
-    return q;
+std::vector<double> mat_to_vec(const Eigen::MatrixXd& M, int column, size_t filled_rows, bool flip_sign){
+    std::vector<double> vec(M.rows());
+    if (flip_sign){
+        for(int i = 0; i < filled_rows; ++i){
+            vec[i] = -M(i,column);
+        }
+    }
+    else{
+        for(int i = 0; i < filled_rows; ++i){
+            vec[i] = M(i,column);
+        }
+    }
+    return vec;
 }
+
 
