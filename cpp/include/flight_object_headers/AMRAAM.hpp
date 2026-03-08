@@ -17,12 +17,14 @@ class AMRAAM{
 // Assuming no change in COM/mass over time (for now)
     public:
         State X;
-        State dXdt(double T, const State& X, double a_norm) const;
+        State dXdt(double T, const State& X, Eigen::Vector3d a_norm) const;
         PNresult pro_nav_2d(double N, const State& X_missile, const State& X_targ, double collision_radius);
+        Eigen::Vector3d pro_nav_6dof(double N, const State& X_missile, const State& X_targ);
         double thrust = 8000; //N
         double A = 1.0; //m^2
         double Cd = 0.08;
         double density = 1.2754; // kg / m^3
+        const double length = 3.0; //m 
 
     private:
         const double m_missile = 1000; // kg
@@ -33,8 +35,9 @@ class AMRAAM{
         const double Jxx =0.5 * m_missile * r*r;
         const double Jyy = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
         const double Jzz = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
-
+        const Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0); // moment arm is only in the pitching direction (body frame)
         Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and 
+                        
 };
