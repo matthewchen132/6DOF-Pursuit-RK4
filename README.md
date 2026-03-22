@@ -8,6 +8,8 @@
 
  Current Status:
   - Working 3D proportional navigation, in the process of converting to 6DOF dynamics.
+<img width="400" height="340" alt="image" src="https://github.com/user-attachments/assets/31b3ae21-0301-443a-80de-55ae49623f2a" />
+
 
 
 State equations from:
