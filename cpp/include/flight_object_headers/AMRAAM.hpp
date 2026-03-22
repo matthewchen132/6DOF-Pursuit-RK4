@@ -20,7 +20,7 @@ class AMRAAM{
         State dXdt(double T, const State& X, Eigen::Vector3d a_norm) const;
         PNresult pro_nav_2d(double N, const State& X_missile, const State& X_targ, double collision_radius);
         Eigen::Vector3d pro_nav_6dof(double N, const State& X_missile, const State& X_targ);
-        double thrust = 8000; //N
+        double thrust = 17000; //N
         double A = 1.0; //m^2
         double Cd = 0.08;
         double density = 1.2754; // kg / m^3

@@ -4,10 +4,11 @@
 #include <initializer_list>
 #include <matplot/matplot.h>
 #include <Eigen/Geometry>
+#include <filesystem>
 
 struct monte_carlo_params{
     int i = 0;
-    double dt = 0.025; //s
+    double dt = 0.01; //s
     double T = 0.0; //s
 };
 
@@ -38,4 +39,34 @@ std::vector<double> mat_to_vec(const Eigen::MatrixXd& M, int column, size_t fill
     return vec;
 }
 
+void generate_mp4(const std::filesystem::path& output_dir, matplot::axes_handle ax, matplot::figure_handle fig){
+    std::filesystem::create_directories(output_dir);
+    int png_count = 0;
+    for(int angle = 0; angle < 360; angle += 30){
+        ax->view(angle, 40);
+    fig->save((output_dir / (std::to_string(png_count) + ".png")).string());
+    png_count++;
+    }
+
+    // Stitch automatically
+    std::string input_pattern = (output_dir / "%d.png").string();
+    std::string output_file   = (output_dir / "trajectory.mp4").string();
+    std::string cmd = "ffmpeg -y -framerate 3 -i " + input_pattern
+                + " -c:v libx264 -pix_fmt yuv420p " + output_file;
+
+
+    if (std::system(cmd.c_str()) != 0)
+        std::cerr << "ffmpeg failed\n";
+}
+
+void generate_logs_csv(const std::filesystem::path& output_dir, Eigen::MatrixXd logs){
+    // not workin
+    std::filesystem::create_directories(output_dir);
+    std::ofstream csv(output_dir / "sim_logs.csv");
+    for(int row = 0; row < logs.rows(); row++){
+        for(int col = 0; col < logs.cols(); col++){
+            csv << logs(row,col);
+        }
+    }
+}
 

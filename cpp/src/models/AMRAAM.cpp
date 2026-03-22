@@ -1,10 +1,19 @@
 #include "flight_object_headers/AMRAAM.hpp"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ){
+    
     Eigen::Vector3d r_tm = X_targ.pos - X_missile.pos; // Position: Target relative to missile.
-    Eigen::Vector3d v_tm = X_targ.vel - X_missile.vel; // Velocity: Target relative to missile.
+    if (r_tm.norm() == 0){
+        r_tm.fill(5.7735e-7); // Fill r_tm with values, norm = 1e-6
+    }
+
+    Eigen::Vector3d v_tm = (X_targ.vel - X_missile.vel); // Velocity: Target relative to missile.
+    if(v_tm.norm() == 0){
+        v_tm.fill(5.7735e-7); // Fill v_tm with values, norm = 1e-6
+    }
     double t_to_go = r_tm.norm()/v_tm.norm();
     Eigen::Vector3d ZEM_dist = r_tm + v_tm*t_to_go;
     // -- unit vectors in the radial (r) and normal (n) directions
@@ -43,6 +52,7 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     // -- Moments -- (body)
     Eigen::Vector3d M_b =  r_cg_cp.cross(F_drag);  // must improve
     // ---- dXdt.vel ---- (body)
+    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b;// + (a_norm);
     Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b + (a_norm);
     dXdt.vel = v_b;
     // ---- dXdt.omega ---- (body)
