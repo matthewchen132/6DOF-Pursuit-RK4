@@ -52,7 +52,7 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     // -- Moments -- (body)
     Eigen::Vector3d M_b =  r_cg_cp.cross(F_drag);  // must improve
     // ---- dXdt.vel ---- (body)
-    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b;// + (a_norm);
+    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b;
     Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b + (a_norm);
     dXdt.vel = v_b;
     // ---- dXdt.omega ---- (body)

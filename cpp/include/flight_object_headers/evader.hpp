@@ -22,7 +22,15 @@ class Evader{
         const double Jxx = 12820.614648;
         const double Jyy = 75673.623725;
         const double Jzz = 85552.113395;
+        // -- Crucial angles for Aircraft Forces and Moments
+        double alpha; // angle of attack
+        double beta; // sideslip angle
+        // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         Eigen::Matrix3d J{{Jxx, 0.0, -Jxz},
                             {0.0, Jyy, 0.0},
                             {-Jxz, 0.0, Jzz}};     
+        // -- Coeff. of Drag, Lift --
+        Eigen::Matrix3d J{{Jxx, 0.0, -Jxz},
+                    {0.0, Jyy, 0.0},
+                    {-Jxz, 0.0, Jzz}};     
 };

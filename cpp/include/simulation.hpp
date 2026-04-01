@@ -8,7 +8,7 @@
 
 struct monte_carlo_params{
     int i = 0;
-    double dt = 0.01; //s
+    double dt = 0.04; //s
     double T = 0.0; //s
 };
 
