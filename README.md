@@ -18,6 +18,8 @@ Missile interception simulation built in modern C++, focused on guidance, naviga
 <img width="400" height="340" alt="simulation preview" src="https://github.com/user-attachments/assets/31b3ae21-0301-443a-80de-55ae49623f2a" />
 
 ---
+Very generous collision radius lol, WIP
+
 
 https://github.com/user-attachments/assets/d39109de-255b-406c-8d07-63465ddce8bd
 
