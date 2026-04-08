@@ -1,10 +1,14 @@
 #pragma once   
 #include <Eigen/Dense>
+
 struct State {;
     Eigen::Vector3d pos = Eigen::Vector3d::Zero();
     Eigen::Vector3d vel = Eigen::Vector3d::Zero();
     Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
     Eigen::Vector3d omega = Eigen::Vector3d::Zero();
+    // -- Crucial angles for Aircraft Forces and Moments
+    double alpha = 0.0; // angle of attack
+    double beta = 0.0; // sideslip angle
 };
 // right mult
 inline State operator*(const State& s, double c){

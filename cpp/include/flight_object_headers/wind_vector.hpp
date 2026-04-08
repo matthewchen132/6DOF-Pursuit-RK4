@@ -3,10 +3,10 @@
 
 struct wind_gust{
     Eigen::Vector3d wind_vel{0.0, 0.0, 0.0};
+    Eigen::Quaterniond q_wind;
     // Define a global start and end simulation time
     double t_start;
     double t_end;
-
     bool active(double t) const {
         return t >= t_start && t <= t_end;
     }

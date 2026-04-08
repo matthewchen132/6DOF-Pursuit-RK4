@@ -18,8 +18,8 @@ class AMRAAM{
     public:
         State X;
         State dXdt(double T, const State& X, Eigen::Vector3d a_norm) const;
-        PNresult pro_nav_2d(double N, const State& X_missile, const State& X_targ, double collision_radius);
-        Eigen::Vector3d pro_nav_6dof(double N, const State& X_missile, const State& X_targ);
+        PNresult pro_nav_2d(double N, const State& X_missile, const State& X_targ, double collision_radius) const;
+        Eigen::Vector3d pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const;
         double thrust = 17000; //N
         double A = 1.0; //m^2
         double Cd = 0.08;
@@ -28,7 +28,6 @@ class AMRAAM{
         // -- Crucial angles for Aircraft Forces and Moments
         double alpha; // angle of attack
         double beta; // sideslip angle
-
     private:
         const double m_missile = 1000; // kg
         const double v_mag = 100.0; // m/s
@@ -43,8 +42,8 @@ class AMRAAM{
         Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and                         
-        // -- Coeff. of Drag, Lift --
-        Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
+        // -- Coeff. of Drag, Lift, Sideforce --
+        Eigen::Matrix3d C{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and 
                             

@@ -3,8 +3,14 @@
 #include "Common.hpp"
 #include <initializer_list>
 #include <matplot/matplot.h>
+#include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <filesystem>
+#include <stdio.h>
+#include <vector>
+#include <State.hpp>
+#include <cmath>
+#include "flight_object_headers/evader.hpp"
 
 struct monte_carlo_params{
     int i = 0;
@@ -13,8 +19,8 @@ struct monte_carlo_params{
 };
 
 
-template<typename State, typename deriv>
-State rk4_step(State X, monte_carlo_params& mc, deriv&& dXdt){ // passes in states of various size and computes numerical integration
+template<typename S, typename deriv>
+S rk4_step(S X, monte_carlo_params& mc, deriv&& dXdt){ // passes in states of various size and computes numerical integration
     // eventually pass in a function when the functions differ
     auto k1 = dXdt(mc.T, X);
     auto k2 = dXdt(mc.T + .5*mc.dt, X + .5*mc.dt*k1);
@@ -59,14 +65,23 @@ void generate_mp4(const std::filesystem::path& output_dir, matplot::axes_handle 
         std::cerr << "ffmpeg failed\n";
 }
 
-void generate_logs_csv(const std::filesystem::path& output_dir, Eigen::MatrixXd logs){
-    // not workin
-    std::filesystem::create_directories(output_dir);
-    std::ofstream csv(output_dir / "sim_logs.csv");
-    for(int row = 0; row < logs.rows(); row++){
-        for(int col = 0; col < logs.cols(); col++){
-            csv << logs(row,col);
-        }
-    }
-}
+void recalc_aero_angles(State& X, Eigen::Vector3d& wind_vel){
 
+    // -- Convert q_bi to q_ib --
+    Eigen::Quaterniond q_ib = X.q.conjugate();
+    q_ib.normalize();
+
+    // -- Get the relative wind velocity --
+    Eigen::Vector3d wind_vel_b = q_ib * wind_vel;
+    Eigen::Vector3d V_rel_b = X.vel - wind_vel_b;
+    double u = V_rel_b(0);
+    double v = V_rel_b(1);
+    double w = V_rel_b(2);
+    double V_mag = std::hypot(u,v,w);
+    
+    // -- Set Angles --
+    X.alpha = std::atan2(w, u);
+    X.beta = std::asin(v/V_mag);
+    X.vel = wind_vel;
+    
+}

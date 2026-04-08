@@ -10,6 +10,7 @@
 #include <math.h>
 #include <chrono>
 #include <thread>
+#include <csignal>
 
 struct log_row{ // option for full logging
     double t;
@@ -21,43 +22,48 @@ int main(){
     const double blast_radius = 2.0; //m
     const int sim_time = 20;
     monte_carlo_params mc{};
-    Evader target1{};
-    wind_gust gust;
-    gust.t_start = 0.0;
-    gust.t_end = sim_time;
-
+    // -- Missile (world frame)--
     AMRAAM missile{};
-
     missile.X.pos = {0.0, 0.0, 0.0};
     missile.X.vel = {30.0, 0.0, 0.0};
     missile.X.q = {1.0,0,0,0};
-
-    target1.X.pos = {200.0, 0.0, 0.0};
-    target1.X.vel = {1.0, 1.0, 1.0};
-    target1.X.q = {1.0,0,0,0};
-
+    // -- Target --
+    Evader target{};
+    target.X.pos = {200.0, 0.0, 0.0};
+    target.X.vel = {1.0, 1.0, 1.0};
+    target.X.q = {1.0,0,0,0};
+    // -- Wind --
+    wind_gust gust;
+    gust.t_start = 0.0;
+    gust.t_end = sim_time;
+    gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0);
+    
     bool missile_collided = false;
     size_t i = 0;
     Eigen::MatrixXd pos_log(int(sim_time/mc.dt)+1, 11);
 
     while(mc.T <= sim_time && !missile_collided){
+
         // -- position logging -- 
-        Eigen::Vector3d a_n = missile.pro_nav_6dof(3.0, missile.X, target1.X);
+        Eigen::Vector3d a_n = missile.pro_nav_6dof(3.0, missile.X, target.X);
         pos_log(i,0) = mc.T;
         pos_log.block<1,3>(i,1) = missile.X.pos.transpose();
-        pos_log.block<1,3>(i,4) = target1.X.pos.transpose();
+        pos_log.block<1,3>(i,4) = target.X.pos.transpose();
         pos_log.block<1,3>(i,7) = a_n.transpose();
+
         // -- ZEM Distance --
-        pos_log(i, pos_log.cols()-1) = (missile.X.pos - target1.X.pos).norm();
+        pos_log(i, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm();
         i++;
-
-        target1.X = rk4_step(
-            target1.X, mc, 
+        // -- calculate angle of attack, sideslip, numerical integration.
+        recalc_aero_angles(target.X, gust.wind_vel);
+        target.X = rk4_step(
+            target.X, mc, 
             [&](double t, const State& X) { 
-                return target1.dXdt(t, X); 
+                return target.dXdt(t, X); 
             });
-        target1.X.q.normalize(); // normalize quaternions after each loop
+        target.X.q.normalize();
 
+        recalc_aero_angles(target.X, gust.wind_vel);
         missile.X = rk4_step(
             missile.X, mc,
             [&](double t, const State& X) { 
@@ -65,15 +71,15 @@ int main(){
             });
         missile.X.q.normalize();
         // Missile Collision detecion
-        if ((missile.X.pos - target1.X.pos).norm() <= blast_radius ) {
+        if ((missile.X.pos - target.X.pos).norm() <= blast_radius ) {
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
         }        
         mc.T += mc.dt;
     }
-    //Plotting    
-    pos_log.conservativeResize(i,Eigen::NoChange); // (WIP) find smart way to not hardcode "11"
 
+    // -- Plotting --
+    pos_log.conservativeResize(i,Eigen::NoChange); // (WIP) find smart way to not hardcode "11"
     std::vector<double> m_x = mat_to_vec(pos_log, 1, i, false);
     std::vector<double> m_y = mat_to_vec(pos_log, 2, i, false);
     std::vector<double> m_z = mat_to_vec(pos_log, 3, i, true);
@@ -91,10 +97,12 @@ int main(){
     targ_plot->color("red");
     targ_plot->line_width(1.5);
     targ_plot->display_name("Target Location");
+    
     // -- mark start point as "o" --
     auto targ_start = ax->plot3({t_x[0]}, {t_y[0]}, {t_z[0]}, "ro");
     targ_start->marker_size(10);
     targ_start->display_name("Target Start");
+    
     // -- mark end point as "o" --    
     auto targ_end = ax->plot3({t_x[t_x.size()-1]}, {t_y[t_x.size()-1]}, {t_z[t_x.size()-1]}, "rx");
     targ_end->marker_size(10);
@@ -105,10 +113,12 @@ int main(){
     m_plot->color("blue");
     m_plot->line_width(1.5);
     m_plot->display_name("Missile Location");
+    
     // -- mark start point as "o" --
     auto m_start = ax->plot3({m_x[0]}, {m_y[0]}, {m_z[0]}, "bo");
     m_start->marker_size(10);
     m_start->display_name("Missile Start");
+
     // -- mark end point as "x" --
     auto m_end = ax->plot3({m_x[m_x.size()-1]}, {m_y[m_x.size()-1]}, {m_z[m_x.size()-1]}, "bx");
     m_end->marker_size(10);

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 
-Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ){
+Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const{
     
     Eigen::Vector3d r_tm = X_targ.pos - X_missile.pos; // Position: Target relative to missile.
     if (r_tm.norm() == 0){
@@ -39,7 +39,7 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     dXdt.pos = q_bi * X.vel;
     // -- Thrust Body to Inertial --
     Eigen::Vector3d T_b(thrust, 0, 0);
-    Eigen::Vector3d T_w = q_bi * T_b; // q T_b q^-1
+    Eigen::Vector3d T_i = q_bi * T_b; // q T_b q^-1
     // -- Gravity (World to Body) --
     const Eigen::Vector3d g_w(0.0, 0.0, 9.81);
     Eigen::Vector3d g_b = q_bi.conjugate() * g_w; // the conjugate is q "inertial to body"
@@ -52,8 +52,8 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     // -- Moments -- (body)
     Eigen::Vector3d M_b =  r_cg_cp.cross(F_drag);  // must improve
     // ---- dXdt.vel ---- (body)
-    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b;
-    Eigen::Vector3d v_b = (1.0/m_missile) * (T_w + F_drag) - X.omega.cross(X.vel) + g_b + (a_norm);
+    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_drag) - X.omega.cross(X.vel) + g_b;
+    Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_drag) - X.omega.cross(X.vel) + g_b + (a_norm);
     dXdt.vel = v_b;
     // ---- dXdt.omega ---- (body)
     Eigen::Vector3d w = X.omega;
@@ -62,7 +62,7 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     return dXdt;
 }
 
-PNresult AMRAAM::pro_nav_2d(const double N, const State& X_missile, const State& X_targ, double collision_radius){
+PNresult AMRAAM::pro_nav_2d(const double N, const State& X_missile, const State& X_targ, double collision_radius) const{
     PNresult out;
     const Eigen::Vector2d r{
         X_targ.pos(0) - X_missile.pos(0),
