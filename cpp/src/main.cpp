@@ -3,14 +3,15 @@
 #include "flight_object_headers/evader.hpp"
 #include "flight_object_headers/wind_vector.hpp"
 #include "Common.hpp"
+#include "state_full.hpp"
+#include "Timer.hpp"
 #include <stdio.h>
 #include <iostream>
+#include <numeric>
 #include <matplot/matplot.h>
-#include "state_full.hpp"
 #include <math.h>
-#include <chrono>
 #include <thread>
-#include <csignal>
+
 
 struct log_row{ // option for full logging
     double t;
@@ -22,6 +23,8 @@ int main(){
     const double blast_radius = 2.0; //m
     const int sim_time = 20;
     monte_carlo_params mc{};
+    Timer timer; // Seconds
+
     // -- Missile (world frame)--
     AMRAAM missile{};
     missile.X.pos = {0.0, 0.0, 0.0};
@@ -37,23 +40,25 @@ int main(){
     gust.t_start = 0.0;
     gust.t_end = sim_time;
     gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0);
-    
+
     bool missile_collided = false;
-    size_t i = 0;
+    size_t counter = 0;
     Eigen::MatrixXd pos_log(int(sim_time/mc.dt)+1, 11);
+    std::vector<double> loop_times;
+    loop_times.reserve(int(sim_time/mc.dt));
 
     while(mc.T <= sim_time && !missile_collided){
-
+        // - Timer -
+        timer.start_timing();
         // -- position logging -- 
         Eigen::Vector3d a_n = missile.pro_nav_6dof(3.0, missile.X, target.X);
-        pos_log(i,0) = mc.T;
-        pos_log.block<1,3>(i,1) = missile.X.pos.transpose();
-        pos_log.block<1,3>(i,4) = target.X.pos.transpose();
-        pos_log.block<1,3>(i,7) = a_n.transpose();
-
+        pos_log(counter,0) = mc.T;
+        pos_log.block<1,3>(counter,1) = missile.X.pos.transpose();
+        pos_log.block<1,3>(counter,4) = target.X.pos.transpose();
+        pos_log.block<1,3>(counter,7) = a_n.transpose();
         // -- ZEM Distance --
-        pos_log(i, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm();
-        i++;
+        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm();
+
         // -- calculate angle of attack, sideslip, numerical integration.
         recalc_aero_angles(target.X, gust.wind_vel);
         target.X = rk4_step(
@@ -75,55 +80,57 @@ int main(){
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
         }        
+        // -- Log Loop Time --
+        double sim_loop_time = timer.stop_timing();
+        loop_times.push_back(sim_loop_time); 
+        // -- Increment --
+        counter++;
         mc.T += mc.dt;
     }
+    double total_sim_time = std::accumulate(loop_times.begin(), loop_times.end(), 0.0);
+    double average_sim_time = total_sim_time / counter;
+    std::cout << "Average Sim Loop Time (us): " << average_sim_time << std::endl;
 
     // -- Plotting --
-    pos_log.conservativeResize(i,Eigen::NoChange); // (WIP) find smart way to not hardcode "11"
-    std::vector<double> m_x = mat_to_vec(pos_log, 1, i, false);
-    std::vector<double> m_y = mat_to_vec(pos_log, 2, i, false);
-    std::vector<double> m_z = mat_to_vec(pos_log, 3, i, true);
-    std::vector<double> t_x = mat_to_vec(pos_log, 4, i, false);
-    std::vector<double> t_y = mat_to_vec(pos_log, 5, i, false);
-    std::vector<double> t_z = mat_to_vec(pos_log, 6, i, true);
+    pos_log.conservativeResize(counter, Eigen::NoChange); // (WIP) find smart way to not hardcode "11"
+    std::vector<double> m_x = mat_to_vec(pos_log, 1, counter, false);
+    std::vector<double> m_y = mat_to_vec(pos_log, 2, counter, false);
+    std::vector<double> m_z = mat_to_vec(pos_log, 3, counter, true);
+    std::vector<double> t_x = mat_to_vec(pos_log, 4, counter, false);
+    std::vector<double> t_y = mat_to_vec(pos_log, 5, counter, false);
+    std::vector<double> t_z = mat_to_vec(pos_log, 6, counter, true);
     
-
     auto fig = matplot::figure(true);
     auto ax = fig->current_axes();
     ax->hold(matplot::on);
-    
+
     // -- F-16 TRAJECTORY --
     auto targ_plot = ax->plot3(t_x, t_y, t_z);
-    targ_plot->color("red");
+    targ_plot->color("blue");
     targ_plot->line_width(1.5);
     targ_plot->display_name("Target Location");
-    
     // -- mark start point as "o" --
-    auto targ_start = ax->plot3({t_x[0]}, {t_y[0]}, {t_z[0]}, "ro");
+    auto targ_start = ax->plot3({t_x[0]}, {t_y[0]}, {t_z[0]}, "bo");
     targ_start->marker_size(10);
     targ_start->display_name("Target Start");
-    
     // -- mark end point as "o" --    
-    auto targ_end = ax->plot3({t_x[t_x.size()-1]}, {t_y[t_x.size()-1]}, {t_z[t_x.size()-1]}, "rx");
+    auto targ_end = ax->plot3({t_x[t_x.size()-1]}, {t_y[t_x.size()-1]}, {t_z[t_x.size()-1]}, "bx");
     targ_end->marker_size(10);
     targ_end->display_name("Target End");
-
     // -- MISSILE TRAJECTORY --
     auto m_plot = ax->plot3(m_x, m_y, m_z);
-    m_plot->color("blue");
+    m_plot->color("red");
     m_plot->line_width(1.5);
     m_plot->display_name("Missile Location");
-    
     // -- mark start point as "o" --
-    auto m_start = ax->plot3({m_x[0]}, {m_y[0]}, {m_z[0]}, "bo");
+    auto m_start = ax->plot3({m_x[0]}, {m_y[0]}, {m_z[0]}, "ro");
     m_start->marker_size(10);
     m_start->display_name("Missile Start");
-
     // -- mark end point as "x" --
-    auto m_end = ax->plot3({m_x[m_x.size()-1]}, {m_y[m_x.size()-1]}, {m_z[m_x.size()-1]}, "bx");
+    auto m_end = ax->plot3({m_x[m_x.size()-1]}, {m_y[m_x.size()-1]}, {m_z[m_x.size()-1]}, "rx");
     m_end->marker_size(10);
     m_end->display_name("Missile End");
-    // -- Label Axes
+    // -- Label Axes --
     ax->xlabel("X position (m)");
     ax->ylabel("Y position (m)");
     ax->zlabel("Z position (m)");
