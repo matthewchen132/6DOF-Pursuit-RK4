@@ -1,1 +1,4 @@
-cpp/CMakeLists.txt linguist-vendored
+**/*.cmake linguist-vendored
+**/CMakeLists.txt linguist-vendored
+cpp/build/** linguist-vendored
+cpp/_deps/** linguist-vendored
