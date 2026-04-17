@@ -2,19 +2,20 @@
 #include <vector>
 #include <cmath>
 #include <State.hpp>
+#include "aero/aero.hpp"
 
 class Evader{
     private:
+        aero_functions aero_func; // Aerodynamic helpers
         const double m_evader = 9298.64; // kg
         const double length = 10.0; // meters
         const double r = .1; // meters
         const double MOI = 0.5*(m_evader)*r*r*1.1; // (.5*MR^2)*1.1, approximated with a cylinder,        
     public:
         State X;
-        State dXdt(double T, const State& X_2d) const;
-        Eigen::Vector3d update_aero_coeffs(const State& X, Eigen::Vector3d C_aero) const;
-        Eigen::Matrix3d rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero) const;
-
+        State dXdt(const double T, const State& X_2d) const;
+        Eigen::Matrix3d rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero, const AeroAngles A) const;
+        Eigen::Vector3d wind_vel_i;
         double A = 1.0; // m^2
         double density = 1.2754; // kg / m^3
         double thrust = 120000; // N

@@ -1,6 +1,5 @@
 #pragma once
 #include <stdio.h>
-#include "Common.hpp"
 #include <initializer_list>
 #include <matplot/matplot.h>
 #include <Eigen/Dense>
@@ -54,7 +53,6 @@ void generate_mp4(const std::filesystem::path& output_dir, matplot::axes_handle 
     fig->save((output_dir / (std::to_string(png_count) + ".png")).string());
     png_count++;
     }
-
     // Stitch automatically
     std::string input_pattern = (output_dir / "%d.png").string();
     std::string output_file   = (output_dir / "trajectory.mp4").string();
@@ -63,25 +61,4 @@ void generate_mp4(const std::filesystem::path& output_dir, matplot::axes_handle 
 
     if (std::system(cmd.c_str()) != 0)
         std::cerr << "ffmpeg failed\n";
-}
-
-void recalc_aero_angles(State& X, Eigen::Vector3d& wind_vel){
-
-    // -- Convert q_bi to q_ib --
-    Eigen::Quaterniond q_ib = X.q.conjugate();
-    q_ib.normalize();
-
-    // -- Get the relative wind velocity --
-    Eigen::Vector3d wind_vel_b = q_ib * wind_vel;
-    Eigen::Vector3d V_rel_b = X.vel - wind_vel_b;
-    double u = V_rel_b(0);
-    double v = V_rel_b(1);
-    double w = V_rel_b(2);
-    double V_mag = std::hypot(u,v,w);
-    
-    // -- Set Angles --
-    X.alpha = std::atan2(w, u);
-    X.beta = std::asin(v/V_mag);
-    X.vel = wind_vel;
-    
 }

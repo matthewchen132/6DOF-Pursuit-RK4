@@ -2,9 +2,9 @@
 #include "flight_object_headers/AMRAAM.hpp"
 #include "flight_object_headers/evader.hpp"
 #include "flight_object_headers/wind_vector.hpp"
-#include "Common.hpp"
 #include "state_full.hpp"
-#include "Timer.hpp"
+#include "performance_tools/Timer.hpp"
+#include "aero/aero.hpp"
 #include <stdio.h>
 #include <iostream>
 #include <numeric>
@@ -20,47 +20,52 @@ struct log_row{ // option for full logging
 };
 
 int main(){
+    aero_functions aero_functions; // Aerodynamic helpers
     const double blast_radius = 2.0; //m
     const int sim_time = 20;
     monte_carlo_params mc{};
-    Timer timer; // Seconds
-
+    Timer loop_timer_us;
+    Timer rk4_timer_us;
     // -- Missile (world frame)--
     AMRAAM missile{};
     missile.X.pos = {0.0, 0.0, 0.0};
     missile.X.vel = {30.0, 0.0, 0.0};
     missile.X.q = {1.0,0,0,0};
+    AeroAngles missile_aero_angles;
     // -- Target --
     Evader target{};
     target.X.pos = {200.0, 0.0, 0.0};
     target.X.vel = {1.0, 1.0, 1.0};
     target.X.q = {1.0,0,0,0};
+    AeroAngles target_aero_angles;
+
     // -- Wind --
     wind_gust gust;
     gust.t_start = 0.0;
     gust.t_end = sim_time;
     gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0);
-
+    target.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
+    missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
+    
     bool missile_collided = false;
     size_t counter = 0;
-    Eigen::MatrixXd pos_log(int(sim_time/mc.dt)+1, 11);
     std::vector<double> loop_times;
     loop_times.reserve(int(sim_time/mc.dt));
-
+    
+    Eigen::MatrixXd pos_log(int(sim_time/mc.dt)+1, 11);
     while(mc.T <= sim_time && !missile_collided){
-        // - Timer -
-        timer.start_timing();
+        // -- Timer --
+        loop_timer_us.start_timing();
+        
         // -- position logging -- 
         Eigen::Vector3d a_n = missile.pro_nav_6dof(3.0, missile.X, target.X);
         pos_log(counter,0) = mc.T;
         pos_log.block<1,3>(counter,1) = missile.X.pos.transpose();
         pos_log.block<1,3>(counter,4) = target.X.pos.transpose();
         pos_log.block<1,3>(counter,7) = a_n.transpose();
-        // -- ZEM Distance --
-        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm();
+        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm(); // ZEM
 
-        // -- calculate angle of attack, sideslip, numerical integration.
-        recalc_aero_angles(target.X, gust.wind_vel);
+        // AeroAngles target_wind_angles = aero_functions.recalc_aero_angles(target.X, gust.wind_vel); // angle of attack & sideslip  
         target.X = rk4_step(
             target.X, mc, 
             [&](double t, const State& X) { 
@@ -68,21 +73,25 @@ int main(){
             });
         target.X.q.normalize();
 
-        recalc_aero_angles(target.X, gust.wind_vel);
+        // -- calculate angle of attack, sideslip -- 
+        // AeroAngles missile_wind_angles = aero_functions.recalc_aero_angles(missile.X, gust.wind_vel); // angle of attack & sideslip 
         missile.X = rk4_step(
             missile.X, mc,
             [&](double t, const State& X) { 
                 return missile.dXdt(t, X, a_n); 
             });
         missile.X.q.normalize();
+
         // Missile Collision detecion
         if ((missile.X.pos - target.X.pos).norm() <= blast_radius ) {
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
         }        
+        
         // -- Log Loop Time --
-        double sim_loop_time = timer.stop_timing();
+        double sim_loop_time = loop_timer_us.stop_timing();
         loop_times.push_back(sim_loop_time); 
+        
         // -- Increment --
         counter++;
         mc.T += mc.dt;

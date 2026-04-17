@@ -1,7 +1,20 @@
 #include "flight_object_headers/AMRAAM.hpp"
+#include "aero/aero.hpp"
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+
+Eigen::Matrix3d AMRAAM::rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero, const AeroAngles aero) const{
+    // returns the rotation matrix from WIND -> BODY. 
+    double c_a = cos(aero.alpha);
+    double c_b = cos(aero.beta);
+    double s_a = sin(aero.alpha);
+    double s_b = sin(aero.beta);
+    Eigen::Matrix3d R_wb{{c_a * c_b, s_b, s_a * c_b},
+                    {-c_a * s_b, c_b, -s_a * s_b},
+                    {-s_a, 0.0, c_a}};
+    return R_wb;
+}
 
 Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const{
     
@@ -28,8 +41,11 @@ Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const Sta
     return a_norm;
 }
 
-State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // NED
+State AMRAAM::dXdt(const double T, const State& X, Eigen::Vector3d a_norm) const { // NED
     State dXdt = State();
+    AeroAngles aero_angles = aero_func.recalc_aero_angles(X, wind_vel_i);
+    Eigen::Matrix3d R_wb = rotate_wind_to_body(X, C_aero, aero_angles); // Rotation Matrix for wind frame -> Body frame.
+
     // ---- dXdt.q ---- (rotate from body to world frame)
     Eigen::Quaterniond q_bi = X.q;
     Eigen::Quaterniond omega_q(0.0, X.omega(0), X.omega(1), X.omega(2));
@@ -47,13 +63,20 @@ State AMRAAM::dXdt(double T, const State& X, Eigen::Vector3d a_norm) const { // 
     const double v_mag = std::max(X.vel.norm(), 1e-6);
     Eigen::Vector3d v_hats = X.vel / v_mag; // components of velocity
     double dyn_pressure = 0.5 * density * v_mag * v_mag;
-    // -- Drag -- (body)
-    Eigen::Vector3d F_drag = -dyn_pressure * Cd * A * v_hats;
+    // -- Aerodynamic Forces -- (Wind Frame)
+    double L = dyn_pressure * A * C_aero(0);
+    double D = dyn_pressure * A * C_aero(1);
+    double Y = dyn_pressure * A * C_aero(2);
+    Eigen::Vector3d F_aero_w(-L, D, -Y);
+    // -- Aerodynamic Forces -- (Wind Frame)
+    Eigen::Vector3d F_aero_b = R_wb * F_aero_w;
+
+
     // -- Moments -- (body)
-    Eigen::Vector3d M_b =  r_cg_cp.cross(F_drag);  // must improve
+    Eigen::Vector3d M_b =  r_cg_cp.cross(F_aero_b);  // must improve
     // ---- dXdt.vel ---- (body)
     // Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_drag) - X.omega.cross(X.vel) + g_b;
-    Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_drag) - X.omega.cross(X.vel) + g_b + (a_norm);
+    Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_aero_b) - X.omega.cross(X.vel) + g_b + (a_norm);
     dXdt.vel = v_b;
     // ---- dXdt.omega ---- (body)
     Eigen::Vector3d w = X.omega;
