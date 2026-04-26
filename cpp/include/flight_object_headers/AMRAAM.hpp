@@ -17,7 +17,7 @@ struct PNresult{ // data from Pro-nav
 class AMRAAM{
     // Assuming no change in COM/mass over time (for now)
     private:
-        aero_functions aero_func; // Aerodynamic helpers
+        aero_functions aerodynamics; // Aerodynamic helpers
         const double m_missile = 1000; // kg
         const double v_mag = 100.0; // m/s
         const double missile_l = 10; // meters
@@ -26,12 +26,15 @@ class AMRAAM{
         const double Jxx =0.5 * m_missile * r*r;
         const double Jyy = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
         const double Jzz = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
+        const double wingspan = 0.45; // meters
+        const double MAC_chord_length = 0.2 * missile_l; // meters
+        
         // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
-        Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
+        const Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and                         
         // -- Coeff. of Drag, Lift, Sideforce --
-        Eigen::Matrix3d C{{Jxx, 0.0, 0.0}, 
+        const Eigen::Matrix3d C{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and                      
     public:
@@ -42,9 +45,8 @@ class AMRAAM{
         Eigen::Vector3d wind_vel_i;
         double thrust = 17000; //N
         double A = 1.0; //m^2
-        Eigen::Vector3d C_aero = Eigen::Vector3d (0.08, 0.16, 0.4);    
         double density = 1.2754; // kg / m^3
-        const double length = 3.0; //m 
-        const Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0); // moment arm is only in the pitching direction (body frame)
+        const double cg_cp_length = 3.0; //m 
+        const Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-cg_cp_length, 0.0, 0.0); // moment arm is only in the pitching direction (body frame)
         Eigen::Matrix3d rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero, const AeroAngles aero) const;                      
 };
