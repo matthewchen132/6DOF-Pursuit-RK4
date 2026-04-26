@@ -17,67 +17,101 @@ Eigen::Matrix3d AMRAAM::rotate_wind_to_body(const State& X, const Eigen::Vector3
 }
 
 Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const{
-    
+    /*
+    Full 6-DOF Proportional Navigation.
+    Returns a_norm to follow.
+    */
     Eigen::Vector3d r_tm = X_targ.pos - X_missile.pos; // Position: Target relative to missile.
     if (r_tm.norm() == 0){
         r_tm.fill(5.7735e-7); // Fill r_tm with values, norm = 1e-6
     }
 
-    Eigen::Vector3d v_tm = (X_targ.vel - X_missile.vel); // Velocity: Target relative to missile.
+    Eigen::Vector3d v_tm = (X_targ.q * X_targ.vel) - (X_missile.q * X_missile.vel); // Inertial-frame relative velocity
     if(v_tm.norm() == 0){
         v_tm.fill(5.7735e-7); // Fill v_tm with values, norm = 1e-6
     }
-    double t_to_go = r_tm.norm()/v_tm.norm();
+
+    double Vc = -r_tm.normalized().dot(v_tm);
+    double t_to_go = r_tm.norm() / std::max(Vc, 1e-6);
     Eigen::Vector3d ZEM_dist = r_tm + v_tm*t_to_go;
+
     // -- unit vectors in the radial (r) and normal (n) directions
     Eigen::Vector3d u_r = r_tm * (1 / r_tm.norm());
+
     // -- ZEM --
     Eigen::Vector3d ZEM_r = (ZEM_dist.dot(u_r)) * u_r;
     Eigen::Vector3d ZEM_n = ZEM_dist - ZEM_r;
-    Eigen::Vector3d a_norm = N * ZEM_n / (t_to_go * t_to_go);
+    Eigen::Vector3d a_norm_cmd = N * ZEM_n / (t_to_go * t_to_go);
+
     // -- Kinematic Eqs --
     Eigen::Vector3d r_dot_missile = v_tm;
-    Eigen::Vector3d v_dot_missile = a_norm;
-    return a_norm;
+    Eigen::Vector3d v_dot_missile = a_norm_cmd;
+    return a_norm_cmd;
 }
 
-State AMRAAM::dXdt(const double T, const State& X, Eigen::Vector3d a_norm) const { // NED
+State AMRAAM::dXdt(const double T, const State& X, Eigen::Vector3d a_norm_i) const { // NED
     State dXdt = State();
-    AeroAngles aero_angles = aero_func.recalc_aero_angles(X, wind_vel_i);
-    Eigen::Matrix3d R_wb = rotate_wind_to_body(X, C_aero, aero_angles); // Rotation Matrix for wind frame -> Body frame.
+    AeroAngles aero_angles = aerodynamics.recalc_aero_angles(X, wind_vel_i);
 
-    // ---- dXdt.q ---- (rotate from body to world frame)
-    Eigen::Quaterniond q_bi = X.q;
+    // -- dXdt.q -- (Inertial)
+    Eigen::Quaterniond q_bi = X.q; // X.q is Body frame
     Eigen::Quaterniond omega_q(0.0, X.omega(0), X.omega(1), X.omega(2));
     dXdt.q = (q_bi * omega_q);
     dXdt.q.coeffs() *= 0.5;
-    // ---- dXdt.pos ---- (World)
+    Eigen::Quaterniond q_ib = q_bi.conjugate();
+
+    // -- Aerodynamic Coefficients -- (Wind Frame)
+    AeroCoeffs C_aero;
+    const Eigen::Vector3d wind_vel_b = q_ib * wind_vel_i;
+    Eigen::Vector3d V_rel = X.vel - wind_vel_b;
+    C_aero.C_translational = aerodynamics.C_translations_missile(aero_angles);
+    C_aero.C_moments = aerodynamics.C_moments_missile(X.omega, aero_angles, wingspan, MAC_chord_length, V_rel);
+    Eigen::Matrix3d R_wb = rotate_wind_to_body(X, C_aero.C_translational, aero_angles); // Rotation Matrix: Wind -> Body 
+
+    
+    // -- dXdt.pos -- (World)
     dXdt.pos = q_bi * X.vel;
-    // -- Thrust Body to Inertial --
+
+    // -- Thrust -- (Body)
     Eigen::Vector3d T_b(thrust, 0, 0);
-    Eigen::Vector3d T_i = q_bi * T_b; // q T_b q^-1
+
     // -- Gravity (World to Body) --
-    const Eigen::Vector3d g_w(0.0, 0.0, 9.81);
-    Eigen::Vector3d g_b = q_bi.conjugate() * g_w; // the conjugate is q "inertial to body"
-    // -- dynamic pressure --
-    const double v_mag = std::max(X.vel.norm(), 1e-6);
-    Eigen::Vector3d v_hats = X.vel / v_mag; // components of velocity
+    const Eigen::Vector3d g_i(0.0, 0.0, 9.81);
+    Eigen::Vector3d g_b = q_bi.conjugate() * g_i; // the conjugate is q "inertial to body"
+
+    
+    // -- Dynamic Pressure -- (Wind Frame)
+    const double v_mag = std::max(V_rel.norm(), 1e-6);
+    Eigen::Vector3d v_hats = V_rel / v_mag;
     double dyn_pressure = 0.5 * density * v_mag * v_mag;
+    
     // -- Aerodynamic Forces -- (Wind Frame)
-    double L = dyn_pressure * A * C_aero(0);
-    double D = dyn_pressure * A * C_aero(1);
-    double Y = dyn_pressure * A * C_aero(2);
-    Eigen::Vector3d F_aero_w(-L, D, -Y);
-    // -- Aerodynamic Forces -- (Wind Frame)
+    double L = dyn_pressure * A * C_aero.C_translational(0);
+    double D = dyn_pressure * A * C_aero.C_translational(1);
+    double Y = dyn_pressure * A * C_aero.C_translational(2);
+    Eigen::Vector3d F_aero_w(-D, Y, -L);
+    
+    // -- Aerodynamic Forces -- (Body Frame)
     Eigen::Vector3d F_aero_b = R_wb * F_aero_w;
-
-
-    // -- Moments -- (body)
-    Eigen::Vector3d M_b =  r_cg_cp.cross(F_aero_b);  // must improve
-    // ---- dXdt.vel ---- (body)
-    // Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_drag) - X.omega.cross(X.vel) + g_b;
-    Eigen::Vector3d v_b = (1.0/m_missile) * (T_i + F_aero_b) - X.omega.cross(X.vel) + g_b + (a_norm);
-    dXdt.vel = v_b;
+    
+    // -- Convert a_norm to body frame, zero component in nose direction --
+    Eigen::Vector3d a_norm_b = q_ib * a_norm_i;
+    Eigen::Vector3d a_parallel_b = a_norm_b.dot(v_hats) * v_hats;
+    Eigen::Vector3d a_lateral = a_norm_b - a_parallel_b;
+    Eigen::Vector3d F_guidance_b = m_missile * a_lateral;
+    
+    // ---- dXdt.vel ---- (Body Frame)
+    Eigen::Vector3d V_b = (1.0/m_missile) * (T_b + F_aero_b + F_guidance_b) - X.omega.cross(X.vel) + g_b;
+    dXdt.vel = V_b;
+    
+    // -- Moments -- (Body Frame)
+    Eigen::Vector3d M_scaled = Eigen::Vector3d(C_aero.C_moments(0) * wingspan,
+                                                C_aero.C_moments(1) * MAC_chord_length,
+                                                C_aero.C_moments(2) * wingspan
+                                                ); // Gets the corresponding aero moment coefficient to corresponding length acted upon.
+    Eigen::Vector3d M_aero_b = dyn_pressure * A * M_scaled;
+    Eigen::Vector3d M_b = r_cg_cp.cross(F_aero_b) + M_aero_b;
+    
     // ---- dXdt.omega ---- (body)
     Eigen::Vector3d w = X.omega;
     Eigen::Vector3d ang_momentum = J * w;
@@ -86,18 +120,20 @@ State AMRAAM::dXdt(const double T, const State& X, Eigen::Vector3d a_norm) const
 }
 
 PNresult AMRAAM::pro_nav_2d(const double N, const State& X_missile, const State& X_targ, double collision_radius) const{
-    PNresult out;
-    const Eigen::Vector2d r{
-        X_targ.pos(0) - X_missile.pos(0),
+    /*
+    Pro-nav in (x,y) with z-axis rotation.
+    */
+   PNresult out;
+   const Eigen::Vector2d r{
+       X_targ.pos(0) - X_missile.pos(0),
         X_targ.pos(1) - X_missile.pos(1) 
     };
-    const Eigen::Vector2d v_missile{
-        X_missile.vel(0), X_missile.vel(1)
-    };
     out.collided = (std::hypot(r(0), r(1)) <= collision_radius) ? true : false;
+    Eigen::Vector3d v_targ_i   = X_targ.q   * X_targ.vel;
+    Eigen::Vector3d v_missile_i = X_missile.q * X_missile.vel;
     const Eigen::Vector2d r_dot{
-        X_targ.vel(0) - X_missile.vel(0),
-        X_targ.vel(1) - X_missile.vel(1)
+        v_targ_i(0) - v_missile_i(0),
+        v_targ_i(1) - v_missile_i(1)
     };
     if(r.squaredNorm() <= 1e-9){
         out.dLOS_dt = 0.0;
