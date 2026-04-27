@@ -5,23 +5,19 @@
 #include "aero/aero.hpp"
 
 class Evader{
-    private:
-        aero_functions aero_func; // Aerodynamic helpers
-        const double m_evader = 9298.64; // kg
-        const double length = 10.0; // meters
-        const double r = .1; // meters
-        const double MOI = 0.5*(m_evader)*r*r*1.1; // (.5*MR^2)*1.1, approximated with a cylinder,        
-        
     public:
+        Evader(double m, double area,
+                double T_b, double b, 
+                double c_bar, double l) 
+                : 
+                m_evader(m), A(area),
+                thrust(T_b), wingspan(b),
+                MAC_chord_length(c_bar), length(l) 
+            {}
         State X;
         State dXdt(const double T, const State& X) const;
         Eigen::Matrix3d rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero, const AeroAngles A) const;
         Eigen::Vector3d wind_vel_i;
-        const double A = 1.0; // m^2
-        const double density = 1.2754; // kg / m^3
-        const double thrust = 120000; // N
-        const double wingspan = 0.45; // meters
-        const double MAC_chord_length = 3.2; // meters
         Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0); // always in line in pitch direction (Body frame)
         
         Eigen::Vector3d C_aero = Eigen::Vector3d (0.00, 0.0, 0.0);    
@@ -29,9 +25,22 @@ class Evader{
         const double Jxx = 12820.614648;
         const double Jyy = 75673.623725;
         const double Jzz = 85552.113395;
-
+        
         // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         Eigen::Matrix3d J{{Jxx, 0.0, -Jxz},
-                            {0.0, Jyy, 0.0},
-                            {-Jxz, 0.0, Jzz}};     
+        {0.0, Jyy, 0.0},
+        {-Jxz, 0.0, Jzz}};     
+    private:
+        aero_functions aero_func; // Aerodynamic helpers
+
+        // -- Constructor-defined --
+        const double m_evader; // kg
+        const double A; // m^2
+        const double thrust; // N
+        const double wingspan; // meters
+        const double MAC_chord_length; // meters
+        const double length; // meters
+
+        const double density = 1.2754; // kg / m^3
+        const double r = .1; // meters        
 };

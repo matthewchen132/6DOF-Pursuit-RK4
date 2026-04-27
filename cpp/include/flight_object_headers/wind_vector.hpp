@@ -14,15 +14,30 @@ struct wind_gust{
 
 class wind{
     public:
-        // -- add a gust to the gusts vector    
+        explicit wind(matplot::axes_handle ax) : ax_(ax) {}
+
         void append_gust(wind_gust g){
+            // -- add a gust to the gusts vector   
             gusts.push_back(g);
         }
 
-        // -- Compute Total Wind Velocity -- 
+        void plot_wind_dir(const wind_gust& g, double scale){
+            // Plot the wind gust direction for one wind gust.
+            Eigen::Vector3d wind_dir = g.wind_vel.normalized();
+            std::vector<double> wx = {0.0, scale * wind_dir(0)};
+            std::vector<double> wy = {0.0, scale * wind_dir(1)};
+            std::vector<double> wz = {0.0, scale * wind_dir(2)};
+
+            wind_plot_ = ax_->plot3(wx, wy, wz);
+            wind_plot_->color("black");
+            wind_plot_->line_width(2.0);
+            wind_plot_->display_name("Wind Direction");
+        }
+        
         Eigen::Vector3d total_wind_vel(double t){
+            // -- Compute Total Wind Velocity -- 
             Eigen::Vector3d net_wind_velocity{0.0, 0.0, 0.0};
-            for(const wind_gust g : gusts){
+            for(const wind_gust& g : gusts){
                 if(g.active(t)){
                     net_wind_velocity += g.wind_vel;
                 }
@@ -31,6 +46,8 @@ class wind{
         }
     private:
         std::vector<wind_gust> gusts;
+        matplot::axes_handle ax_; // matplot object: 
+        matplot::line_handle wind_plot_; // matplot object: customizes line plot characteristics
     // FUTURE: 
     // - worst-case function for wind to always make the strongest push away from target. HJR?
     // - less simple way of treating wind

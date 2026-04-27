@@ -26,25 +26,23 @@ int main(){
     Timer loop_timer_us;
     Timer rk4_timer_us;
     // -- Missile (world frame)--
-    AMRAAM missile{};
+    AMRAAM missile(1000, 1.0, 17000, 0.45, 2.0, 10.0);
     missile.X.pos = {0.0, 0.0, 0.0};
-    missile.X.vel = {0.0, 0.0, 0.0};
+    missile.X.vel = {10.0, 0.0, 0.0};
     missile.X.q = {1.0,0,0,0};
-    AeroAngles missile_aero_angles;
     
-    // -- Target --
-    Evader target{};
-    target.X.pos = {100.0, 100.0, 100.0};
-    target.X.vel = {5.0, 5.0, 2.0};
-    target.X.q = {1.0,0,0,0};
-    AeroAngles target_aero_angles;
+    // -- Target (F-16 Model) --
+    Evader f_16(9298.64, 1.0, 120000, 0.45, 3.2, 10.0);
+    f_16.X.pos = {100.0, 0.0, 100.0};
+    f_16.X.vel = {5.0, 4.0, 3.0};
+    f_16.X.q = {1.0,0,0,0};
 
     // -- Wind --
     wind_gust gust;
     gust.t_start = 0.0;
     gust.t_end = sim_end_time;
-    gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0);
-    target.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
+    gust.wind_vel = Eigen::Vector3d(8.0, 4.0, 2.0);
+    f_16.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     
     bool missile_collided = false;
@@ -58,19 +56,19 @@ int main(){
         loop_timer_us.start_timing();
         
         // -- position logging -- 
-        Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, target.X);
+        Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, f_16.X);
         pos_log(counter,0) = mc.T;
         pos_log.block<1,3>(counter,1) = missile.X.pos.transpose();
-        pos_log.block<1,3>(counter,4) = target.X.pos.transpose();
+        pos_log.block<1,3>(counter,4) = f_16.X.pos.transpose();
         pos_log.block<1,3>(counter,7) = a_n_i.transpose();
-        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - target.X.pos).norm(); // ZEM
+        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - f_16.X.pos).norm(); // ZEM
         
-        target.X = rk4_step(
-            target.X, mc, 
+        f_16.X = rk4_step(
+            f_16.X, mc, 
             [&](double t, const State& X) { 
-                return target.dXdt(t, X); 
+                return f_16.dXdt(t, X); 
             });
-        target.X.q.normalize(); // prevent drift and numerical errors
+        f_16.X.q.normalize(); // prevent drift and numerical errors
 
         missile.X = rk4_step(
             missile.X, mc,
@@ -80,7 +78,7 @@ int main(){
         missile.X.q.normalize(); // prevent drift and numerical errors
 
         // Missile Collision detecion
-        if ((missile.X.pos - target.X.pos).norm() <= blast_radius ) {
+        if ((missile.X.pos - f_16.X.pos).norm() <= blast_radius ) {
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
         }        
@@ -105,9 +103,26 @@ int main(){
     std::vector<double> t_x = mat_to_vec(pos_log, 4, counter, false);
     std::vector<double> t_y = mat_to_vec(pos_log, 5, counter, false);
     std::vector<double> t_z = mat_to_vec(pos_log, 6, counter, true);
+    std::vector<double> t_vec = mat_to_vec(pos_log, 0, counter, false);
     std::vector<double> a_x = mat_to_vec(pos_log, 7, counter, false);
     std::vector<double> a_y = mat_to_vec(pos_log, 8, counter, false);
     std::vector<double> a_z = mat_to_vec(pos_log, 9, counter, false);
+
+    // -- Guidance Acceleration Plot --
+    auto fig_a = matplot::figure(true);
+    auto ax_a = fig_a->current_axes();
+    ax_a->hold(matplot::on);
+    auto a_x_plot = ax_a->plot(t_vec, a_x);
+    a_x_plot->display_name("a_x");
+    auto a_y_plot = ax_a->plot(t_vec, a_y);
+    a_y_plot->display_name("a_y");
+    auto a_z_plot = ax_a->plot(t_vec, a_z);
+    a_z_plot->display_name("a_z");
+    ax_a->xlabel("Time (s)");
+    ax_a->ylabel("Acceleration (m/s^2)");
+    ax_a->title("Guidance Acceleration Command (Inertial)");
+    matplot::legend();
+
     auto fig = matplot::figure(true);
     auto ax = fig->current_axes();
     ax->hold(matplot::on);
@@ -117,14 +132,17 @@ int main(){
     targ_plot->color("blue");
     targ_plot->line_width(1.5);
     targ_plot->display_name("Target Location");
+    
     // -- mark start point as "o" --
     auto targ_start = ax->plot3({t_x[0]}, {t_y[0]}, {t_z[0]}, "bo");
     targ_start->marker_size(10);
     targ_start->display_name("Target Start");
+
     // -- mark end point as "o" --    
     auto targ_end = ax->plot3({t_x[t_x.size()-1]}, {t_y[t_x.size()-1]}, {t_z[t_x.size()-1]}, "bx");
     targ_end->marker_size(10);
     targ_end->display_name("Target End");
+
     // -- MISSILE TRAJECTORY --
     auto m_plot = ax->plot3(m_x, m_y, m_z);
     m_plot->color("red");
@@ -139,18 +157,10 @@ int main(){
     m_end->marker_size(10);
     m_end->display_name("Missile End");
     // -- Wind Velocity Direction --
-    Eigen::Vector3d wind_dir = gust.wind_vel.normalized();
-    double scale = 70.0; // just for visualization
-    std::vector<double> wx = {0.0, scale * wind_dir(0)};
-    std::vector<double> wy = {0.0, scale * wind_dir(1)};
-    std::vector<double> wz = {0.0, scale * wind_dir(2)};
 
-    auto wind_plot = ax->plot3(wx, wy, wz);
-    wind_plot->color("black");
-    wind_plot->line_width(2.0);
-    wind_plot->display_name("Wind Direction");
-
-
+    double scale = 50.0; // just for visualization
+    wind w(ax);
+    w.plot_wind_dir(gust, scale);
 
     // -- Label Axes --
     ax->xlabel("X position (m)");
