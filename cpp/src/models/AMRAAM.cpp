@@ -19,16 +19,16 @@ Eigen::Matrix3d AMRAAM::rotate_wind_to_body(const State& X, const Eigen::Vector3
 Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const{
     /*
     Full 6-DOF Proportional Navigation.
-    Returns a_norm to follow.
+    Returns a_norm_cmd, the ideal acceleration to apply to the missile at that instant.
     */
-    Eigen::Vector3d r_tm = X_targ.pos - X_missile.pos; // Position: Target relative to missile.
+    Eigen::Vector3d r_tm = X_targ.pos - X_missile.pos; // Target relative to missile.
     if (r_tm.norm() == 0){
-        r_tm.fill(5.7735e-7); // Fill r_tm with values, norm = 1e-6
+        r_tm.fill(1e-6); // Fill r_tm with values, norm = 1e-6
     }
 
     Eigen::Vector3d v_tm = (X_targ.q * X_targ.vel) - (X_missile.q * X_missile.vel); // Inertial-frame relative velocity
     if(v_tm.norm() == 0){
-        v_tm.fill(5.7735e-7); // Fill v_tm with values, norm = 1e-6
+        v_tm.fill(1e-6); // Fill v_tm with values, norm = 1e-6
     }
 
     double Vc = -r_tm.normalized().dot(v_tm);
@@ -98,7 +98,7 @@ State AMRAAM::dXdt(const double T, const State& X, Eigen::Vector3d a_norm_i) con
     Eigen::Vector3d a_norm_b = q_ib * a_norm_i;
     Eigen::Vector3d a_parallel_b = a_norm_b.dot(v_hats) * v_hats;
     Eigen::Vector3d a_lateral = a_norm_b - a_parallel_b;
-    Eigen::Vector3d F_guidance_b = m_missile * a_lateral;
+    Eigen::Vector3d F_guidance_b = m_missile * a_lateral; // Point-mass application
     
     // ---- dXdt.vel ---- (Body Frame)
     Eigen::Vector3d V_b = (1.0/m_missile) * (T_b + F_aero_b + F_guidance_b) - X.omega.cross(X.vel) + g_b;
