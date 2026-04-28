@@ -23,6 +23,7 @@ class aero_functions{
                 Returns an AeroAngles object with alpha (angle of attack) and beta (angle of sideslip)
             */
             AeroAngles A;
+            
             // -- Convert q_bi to q_ib --
             Eigen::Quaterniond q_ib = X.q.conjugate();
             q_ib.normalize();

@@ -1,10 +1,6 @@
 Checklist  4/17/26
  [*] Pro-Nav acceleration controller (Prio 1 -> fixes collision)
- [] Target Y Velocity is not updating, constant throughout.
- [] Aero Coeffs damping and pressure term.
-
- [2] Model a linear variation with CL, CD, CY, Cl, Cm, Cn (No lookup table available)
- [3] Control, Ch6 Wiley
+ [1] Control, Ch6 Wiley
  []wind_vel_i is a public Eigen::Vector3d member on both AMRAAM and Evader, set directly in main.cpp. This bypasses any consistency
   guarantees — there's nothing stopping the two objects from having different wind states during the same timestep. The wind class (in wind_vector.hpp) was
    presumably meant to be the canonical source, but it's never wired up to the flight objects.
@@ -27,5 +23,7 @@ Unit Testing Examples
  [] EXPECT_NEAR for 0 velocities
 
 Done:
+ [X] Model a linear variation with CL, CD, CY, Cl, Cm, Cn (No lookup table available)
  [X] Fix Dynamic pressure to be based of V_rel = V_air - V_obj_i
  [X] Wiley section 2.3 (C's of aero and moment)
+ [X] Target Y Velocity is not updating, constant throughout.
