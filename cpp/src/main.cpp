@@ -11,8 +11,6 @@
 #include <math.h>
 #include <thread>
 
-
-
 struct log_row{ // option for full logging
     double t;
     Eigen::Vector3d missile_pos;
@@ -25,25 +23,31 @@ int main(){
     monte_carlo_params mc{};
     Timer loop_timer_us;
     Timer rk4_timer_us;
+
     // -- Missile (world frame)--
-    AMRAAM missile(1000, 1.0, 17000, 0.45, 2.0, 10.0);
+    AMRAAM missile(1000, 17000, 0.45, 2.0, 10.0);
     missile.X.pos = {0.0, 0.0, 0.0};
-    missile.X.vel = {10.0, 0.0, 0.0};
+    missile.X.vel = {40.0, 0.0, 0.0};
     missile.X.q = {1.0,0,0,0};
     
     // -- Target (F-16 Model) --
-    Evader f_16(9298.64, 1.0, 120000, 0.45, 3.2, 10.0);
-    f_16.X.pos = {100.0, 0.0, 100.0};
-    f_16.X.vel = {5.0, 4.0, 3.0};
+    Evader f_16(9298.64, 120000, 1.0, 3.2, 10.0);
+    f_16.X.pos = {100.0, 100.0, 100.0};
+    f_16.X.vel = {0.0, 0.0, 0.0};
     f_16.X.q = {1.0,0,0,0};
+
+    // if not_same_dir(missile.X.pos, f_16.X.pos){
+    //     break;
+    // }
 
     // -- Wind --
     wind_gust gust;
     gust.t_start = 0.0;
     gust.t_end = sim_end_time;
-    gust.wind_vel = Eigen::Vector3d(8.0, 4.0, 2.0);
+    gust.wind_vel = Eigen::Vector3d(0.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
     f_16.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
+    
     
     bool missile_collided = false;
     size_t counter = 0;
@@ -56,28 +60,26 @@ int main(){
         loop_timer_us.start_timing();
         
         // -- position logging -- 
-        Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, f_16.X);
+        Eigen::Vector3d a_n_i = missile.pro_nav_6dof_ZEM(3.0, missile.X, f_16.X);
         pos_log(counter,0) = mc.T;
         pos_log.block<1,3>(counter,1) = missile.X.pos.transpose();
         pos_log.block<1,3>(counter,4) = f_16.X.pos.transpose();
         pos_log.block<1,3>(counter,7) = a_n_i.transpose();
         pos_log(counter, pos_log.cols()-1) = (missile.X.pos - f_16.X.pos).norm(); // ZEM
         
-        f_16.X = rk4_step(
-            f_16.X, mc, 
+        f_16.X = rk4_step(f_16.X, mc, 
             [&](double t, const State& X) { 
                 return f_16.dXdt(t, X); 
             });
         f_16.X.q.normalize(); // prevent drift and numerical errors
 
-        missile.X = rk4_step(
-            missile.X, mc,
+        missile.X = rk4_step(missile.X, mc,
             [&](double t, const State& X) { 
                 return missile.dXdt(t, X, a_n_i); 
             });
         missile.X.q.normalize(); // prevent drift and numerical errors
 
-        // Missile Collision detecion
+        // Missile Collision Detecion
         if ((missile.X.pos - f_16.X.pos).norm() <= blast_radius ) {
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
@@ -148,10 +150,12 @@ int main(){
     m_plot->color("red");
     m_plot->line_width(1.5);
     m_plot->display_name("Missile Location");
+
     // -- mark start point as "o" --
     auto m_start = ax->plot3({m_x[0]}, {m_y[0]}, {m_z[0]}, "ro");
     m_start->marker_size(10);
     m_start->display_name("Missile Start");
+
     // -- mark end point as "x" --
     auto m_end = ax->plot3({m_x[m_x.size()-1]}, {m_y[m_x.size()-1]}, {m_z[m_x.size()-1]}, "rx");
     m_end->marker_size(10);
@@ -167,6 +171,7 @@ int main(){
     ax->ylabel("Y position (m)");
     ax->zlabel("Z position (m)");
     ax->title("Interceptor vs F-16");
+    // equalize_axes(300.0, ax);
     matplot::legend();
     
     // -- Generate a Video of Trajectory (Replace path with your own)--

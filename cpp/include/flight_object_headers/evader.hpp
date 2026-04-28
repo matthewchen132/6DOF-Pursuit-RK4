@@ -6,19 +6,19 @@
 
 class Evader{
     public:
-        Evader(double m, double area,
-                double T_b, double b, 
-                double c_bar, double l) 
+        Evader(double m, double T_b, 
+                double b, double c_bar, double l) 
                 : 
-                m_evader(m), A(area),
-                thrust(T_b), wingspan(b),
-                MAC_chord_length(c_bar), length(l) 
-            {}
+                m_evader(m), thrust(T_b), 
+                wingspan(b), MAC_chord_length(c_bar), length(l) 
+                {
+                    ref_area = wingspan * MAC_chord_length;
+                    Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0);
+                }
         State X;
         State dXdt(const double T, const State& X) const;
-        Eigen::Matrix3d rotate_wind_to_body(const State& X, const Eigen::Vector3d C_aero, const AeroAngles A) const;
+        Eigen::Matrix3d rotate_wind_to_body(const AeroAngles A) const;
         Eigen::Vector3d wind_vel_i;
-        Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0); // always in line in pitch direction (Body frame)
         
         Eigen::Vector3d C_aero = Eigen::Vector3d (0.00, 0.0, 0.0);    
         const double Jxz = 1331.4132386;
@@ -32,15 +32,11 @@ class Evader{
         {-Jxz, 0.0, Jzz}};     
     private:
         aero_functions aero_func; // Aerodynamic helpers
-
-        // -- Constructor-defined --
+        double ref_area; // m^2
         const double m_evader; // kg
-        const double A; // m^2
         const double thrust; // N
         const double wingspan; // meters
         const double MAC_chord_length; // meters
         const double length; // meters
-
         const double density = 1.2754; // kg / m^3
-        const double r = .1; // meters        
 };
