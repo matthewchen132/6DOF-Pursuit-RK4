@@ -19,8 +19,10 @@ Missile interception simulation built in modern C++, focused on guidance, naviga
 V1: Constant Aero, Pro-Nav with ZEM
 https://github.com/user-attachments/assets/d39109de-255b-406c-8d07-63465ddce8bd
 
-V2: Simplified Lienar Aero, Pro-Nav with LOS_rate
-https://github.com/user-attachments/assets/2fab6c99-f513-489b-9df5-bab2cc4118c4
+V2: Simplified Linear Aero, Pro-Nav with LOS_rate
+
+https://github.com/user-attachments/assets/080413b6-ace3-4713-80cf-9f14639d2e08
+
 
 
 
