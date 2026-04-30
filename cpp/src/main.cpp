@@ -19,32 +19,34 @@ struct log_row{ // option for full logging
 
 int main(){
     const double blast_radius = 2.0; //m
-    const double sim_end_time = 20.0;
+    const double sim_end_time = 30.0;
     monte_carlo_params mc{};
     Timer loop_timer_us;
     Timer rk4_timer_us;
 
     // -- Missile (world frame)--
     AMRAAM missile(1000, 17000, 0.45, 2.0, 10.0);
-    missile.X.pos = {0.0, 0.0, 0.0};
-    missile.X.vel = {40.0, 0.0, 0.0};
-    missile.X.q = {1.0,0,0,0};
-    
+    missile.X.pos_i = {0.0, 0.0, 0.0};
+    // Initialize a desired inertial velocity
+    Eigen::Vector3d missile_vel_i = {10.0, 0.0, .0}; 
+    missile.X.q_bi = initialize_quaternion(missile_vel_i); // body→inertial
+    missile.X.q_ib = missile.X.q_bi.conjugate();           // inertial→body
+    missile.X.vel_b = {missile_vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
+
     // -- Target (F-16 Model) --
     Evader f_16(9298.64, 120000, 1.0, 3.2, 10.0);
-    f_16.X.pos = {100.0, 100.0, 100.0};
-    f_16.X.vel = {0.0, 0.0, 0.0};
-    f_16.X.q = {1.0,0,0,0};
-
-    // if not_same_dir(missile.X.pos, f_16.X.pos){
-    //     break;
-    // }
+    f_16.X.pos_i = {1000.0, 200.0, 500.0};
+    // Initialize a desired inertial velocity
+    Eigen::Vector3d f16_vel_i = {.0, 10.0, 0.0};
+    f_16.X.q_bi = initialize_quaternion(f16_vel_i); // body→inertial
+    f_16.X.q_ib = f_16.X.q_bi.conjugate();          // inertial→body
+    f_16.X.vel_b = {f16_vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
 
     // -- Wind --
     wind_gust gust;
     gust.t_start = 0.0;
     gust.t_end = sim_end_time;
-    gust.wind_vel = Eigen::Vector3d(0.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
+    gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
     f_16.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     
@@ -60,27 +62,29 @@ int main(){
         loop_timer_us.start_timing();
         
         // -- position logging -- 
-        Eigen::Vector3d a_n_i = missile.pro_nav_6dof_ZEM(3.0, missile.X, f_16.X);
+        Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, f_16.X);
         pos_log(counter,0) = mc.T;
-        pos_log.block<1,3>(counter,1) = missile.X.pos.transpose();
-        pos_log.block<1,3>(counter,4) = f_16.X.pos.transpose();
+        pos_log.block<1,3>(counter,1) = missile.X.pos_i.transpose();
+        pos_log.block<1,3>(counter,4) = f_16.X.pos_i.transpose();
         pos_log.block<1,3>(counter,7) = a_n_i.transpose();
-        pos_log(counter, pos_log.cols()-1) = (missile.X.pos - f_16.X.pos).norm(); // ZEM
+        pos_log(counter, pos_log.cols()-1) = (missile.X.pos_i - f_16.X.pos_i).norm(); // ZEM
         
         f_16.X = rk4_step(f_16.X, mc, 
             [&](double t, const State& X) { 
                 return f_16.dXdt(t, X); 
             });
-        f_16.X.q.normalize(); // prevent drift and numerical errors
+        f_16.X.q_ib.normalize(); // prevent drift and numerical errors
+        f_16.X.q_bi.normalize(); // prevent drift and numerical errors
 
         missile.X = rk4_step(missile.X, mc,
             [&](double t, const State& X) { 
                 return missile.dXdt(t, X, a_n_i); 
             });
-        missile.X.q.normalize(); // prevent drift and numerical errors
+        missile.X.q_ib.normalize(); // prevent drift and numerical errors
+        missile.X.q_bi.normalize(); // prevent drift and numerical errors
 
         // Missile Collision Detecion
-        if ((missile.X.pos - f_16.X.pos).norm() <= blast_radius ) {
+        if ((missile.X.pos_i - f_16.X.pos_i).norm() <= blast_radius ) {
             std::cout << "Collision occured at time: " << mc.T << std::endl;
             missile_collided = true;
         }        
@@ -162,7 +166,7 @@ int main(){
     m_end->display_name("Missile End");
     // -- Wind Velocity Direction --
 
-    double scale = 50.0; // just for visualization
+    double scale = 100.0; // just for visualization
     wind w(ax);
     w.plot_wind_dir(gust, scale);
 

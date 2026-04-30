@@ -69,15 +69,23 @@ inline void equalize_axes(double size, matplot::axes_handle ax){
     ax->zlim({-size, size});
 }
 
-inline void not_same_dir(Eigen::Vector3d missile_pos, Eigen::Vector3d evader_pos){
-
-    
-}
-
 // Note to self: inline lets you have multiple defs
 inline Eigen::Vector3d actuator_limit(Eigen::Vector3d& cmd, double limit){
     if (cmd.norm() > limit){
         cmd = cmd.normalized() * limit;
     }
     return cmd;
+}
+
+inline Eigen::Quaterniond initialize_quaternion(const Eigen::Vector3d& v_i) {
+    /*
+    This function generates the quaternion (q_bi) to bring the orientation of our object (Inertial) to the Body frame.
+    Returns:
+        q_bi: quaternion representing Body -> Inertial rotation
+    */
+    Eigen::Vector3d v_unit_i = v_i.normalized();
+    
+    Eigen::Vector3d unit_b = Eigen::Vector3d::UnitX(); // Unit vector in inertial frame (1,0,0)
+    Eigen::Quaterniond q_bi = Eigen::Quaterniond::FromTwoVectors(v_unit_i, unit_b); // Inertial -> Body mapping : q * v_unit_i = unit_b (q_ib)
+    return q_bi;
 }
