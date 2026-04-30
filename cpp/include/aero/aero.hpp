@@ -25,12 +25,12 @@ class aero_functions{
             AeroAngles A;
             
             // -- Convert q_bi to q_ib --
-            Eigen::Quaterniond q_ib = X.q.conjugate();
+            Eigen::Quaterniond q_ib = X.q_ib.conjugate();
             q_ib.normalize();
 
             // -- Get the relative wind velocity --
             Eigen::Vector3d wind_vel_b = q_ib * wind_vel;
-            Eigen::Vector3d V_rel_b = X.vel - wind_vel_b;
+            Eigen::Vector3d V_rel_b = X.vel_b - wind_vel_b;
             double u = V_rel_b(0);
             double v = V_rel_b(1);
             double w = V_rel_b(2);

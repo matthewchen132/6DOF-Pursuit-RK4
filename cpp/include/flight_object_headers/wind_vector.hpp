@@ -29,7 +29,7 @@ class wind{
             std::vector<double> wz = {0.0, scale * wind_dir(2)};
 
             wind_plot_ = ax_->plot3(wx, wy, wz);
-            wind_plot_->color("yellow");
+            wind_plot_->color("black");
             wind_plot_->line_width(1.0);
             wind_plot_->display_name("Wind Direction");
         }
