@@ -18,17 +18,17 @@ Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     return R_wb;
 }    
 
-State Evader::dXdt(const double T, const State& X) const{ // const function means it wont modify the variables
-    State dXdt = State();
+State Evader::f(const double T, const State& X) const{ // const function means it wont modify the variables
+    State f = State();
     AeroAngles aero_angles_w = aero_func.recalc_aero_angles(X, wind_vel_i);
     
-    // -- dXdt.q -- (Body to Inertial)
+    // -- f.q -- (Body to Inertial)
     Eigen::Quaterniond q_ib = X.q_ib; // X.q is body to inertial
     Eigen::Quaterniond q_bi = X.q_bi;
     Eigen::Quaterniond omega_q(0.0, X.omega_b(0), X.omega_b(1), X.omega_b(2));
-    dXdt.q_bi = (q_bi * omega_q);
-    dXdt.q_bi.coeffs() *= 0.5;
-    dXdt.q_ib.coeffs() = dXdt.q_bi.conjugate().coeffs();
+    f.q_bi = (q_bi * omega_q);
+    f.q_bi.coeffs() *= 0.5;
+    f.q_ib.coeffs() = f.q_bi.conjugate().coeffs();
     Eigen::Quaterniond q_ib_new = q_ib; // alias used below
     
     // -- Aerodynamic Coefficients --
@@ -44,8 +44,8 @@ State Evader::dXdt(const double T, const State& X) const{ // const function mean
     Eigen::Vector3d v_hats = V_rel / v_mag;
     double dyn_pressure = 0.5 * density * v_mag * v_mag; // NOTE: Don't need to apply v_hats to L,D,Y as it is already encoded into the wind frame.
     
-    // ---- dXdt.pos ---- (Inertial)
-    dXdt.pos_i = q_bi * X.vel_b;
+    // ---- f.pos ---- (Inertial)
+    f.pos_i = q_bi * X.vel_b;
     
     // ---- Thrust ---- (Body)
     Eigen::Vector3d T_b(thrust,0,0);
@@ -63,7 +63,7 @@ State Evader::dXdt(const double T, const State& X) const{ // const function mean
     
     // -- Aerodynamic Forces -- (Body Frame)
     Eigen::Vector3d v_b = (1.0/m_evader) * (T_b + F_aero_b) - X.omega_b.cross(X.vel_b) + g_b;
-    dXdt.vel_b = v_b;
+    f.vel_b = v_b;
 
     // -- Moments -- (Body)
     Eigen::Vector3d M_aero_b;
@@ -73,9 +73,9 @@ State Evader::dXdt(const double T, const State& X) const{ // const function mean
     M_aero_b = Eigen::Vector3d(M_aero_x, M_aero_y, M_aero_z);
     Eigen::Vector3d M_b = M_aero_b; // Simple, assumed thrust acting through the COG. 
                                     // must improve to incorporate T and TVC Gimbal
-    // ---- dXdt.omega ---- (Body)
+    // ---- f.omega ---- (Body)
     Eigen::Vector3d w = X.omega_b; // angular velocity
     Eigen::Vector3d ang_momentum = J * w;
-    dXdt.omega_b = J.llt().solve(M_b - w.cross(ang_momentum));
-    return dXdt;
+    f.omega_b = J.llt().solve(M_b - w.cross(ang_momentum));
+    return f;
 }

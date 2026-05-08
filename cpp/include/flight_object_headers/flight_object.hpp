@@ -25,7 +25,7 @@ class flight_object{
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and                                            
     public:
         State X;
-        State dXdt(const double T, const State& X, Eigen::Vector3d a_norm) const;
+        State f(const double T, const State& X, Eigen::Vector3d a_norm) const;
         Eigen::Vector3d wind_vel_i;
         double thrust = 0.0; //N
 };
