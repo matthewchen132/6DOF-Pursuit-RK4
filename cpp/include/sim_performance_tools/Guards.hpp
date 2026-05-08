@@ -6,15 +6,14 @@
 // Meant to be WRAPPED OVER values.
 
 
-/*
-TODO
-*/ 
-
 struct SimHealth{
     bool healthy = true;
     std::string helper_msg;
 };
 
+
 // SimHealth angular_vel_check(Eigen::Vector3d& ang_vel, ) const{}
 //     For omega in ang_vel, check < than 1e3 rads/sec
 
+
+// Check Sim divergence due to time step

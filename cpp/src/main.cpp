@@ -25,60 +25,56 @@ int main(){
     Timer rk4_timer_us;
 
     // -- Missile (world frame)--
-    AMRAAM missile(1000, 17000, 0.45, 2.0, 10.0);
+    Eigen::Vector3d missile_vel_i = {20.0, 0.0, 0.0}; 
+    AMRAAM missile(1000, 17000, 0.45, 2.0, 10.0, missile_vel_i);
     missile.X.pos_i = {0.0, 0.0, 0.0};
-    // Initialize a desired inertial velocity
-    Eigen::Vector3d missile_vel_i = {10.0, 0.0, .0}; 
-    missile.X.q_bi = initialize_quaternion(missile_vel_i); // body→inertial
-    missile.X.q_ib = missile.X.q_bi.conjugate();           // inertial→body
-    missile.X.vel_b = {missile_vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
 
     // -- Target (F-16 Model) --
-    Evader f_16(9298.64, 120000, 1.0, 3.2, 10.0);
-    f_16.X.pos_i = {1000.0, 200.0, 500.0};
-    // Initialize a desired inertial velocity
-    Eigen::Vector3d f16_vel_i = {.0, 10.0, 0.0};
-    f_16.X.q_bi = initialize_quaternion(f16_vel_i); // body→inertial
-    f_16.X.q_ib = f_16.X.q_bi.conjugate();          // inertial→body
-    f_16.X.vel_b = {f16_vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
+    Eigen::Vector3d f16_vel_i = {0.0, 10.0, 10.0};
+    Evader f_16(9298.64, 120000, 1.0, 3.2, 10.0, f16_vel_i);
+    f_16.X.pos_i = {600.0, 100.0, -300.0};
 
     // -- Wind --
     wind_gust gust;
     gust.t_start = 0.0;
     gust.t_end = sim_end_time;
-    gust.wind_vel = Eigen::Vector3d(10.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
+    gust.wind_vel = Eigen::Vector3d(0.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
     f_16.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
-    
     
     bool missile_collided = false;
     size_t counter = 0;
     std::vector<double> loop_times;
     loop_times.reserve(int(sim_end_time/mc.dt));
-    Eigen::MatrixXd pos_log(int(sim_end_time/mc.dt)+1, 11);
+    Eigen::MatrixXd pos_log(int(sim_end_time/mc.dt)+1, 14);
 
     while(mc.T <= sim_end_time && !missile_collided){
         // -- Timer --
         loop_timer_us.start_timing();
         
-        // -- position logging -- 
+        // -- Data Logging -- 
         Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, f_16.X);
         pos_log(counter,0) = mc.T;
+        // -- Positions (Inertial) --
         pos_log.block<1,3>(counter,1) = missile.X.pos_i.transpose();
         pos_log.block<1,3>(counter,4) = f_16.X.pos_i.transpose();
-        pos_log.block<1,3>(counter,7) = a_n_i.transpose();
+        // -- Attitude (Body, rpy) --
+        pos_log.block<1,3>(counter,7) =  a_n_i.transpose();
+        // pos_log.block<1,3>(counter,10) =  a_n_i.transpose();
+        // pos_log.block<1,3>(counter,13) = a_n_i.transpose();
+        pos_log.block<1,3>(counter,10) = missile.X.pos_i - f_16.X.pos_i; // ZEM
         pos_log(counter, pos_log.cols()-1) = (missile.X.pos_i - f_16.X.pos_i).norm(); // ZEM
         
         f_16.X = rk4_step(f_16.X, mc, 
             [&](double t, const State& X) { 
-                return f_16.dXdt(t, X); 
+                return f_16.f(t, X); 
             });
         f_16.X.q_ib.normalize(); // prevent drift and numerical errors
         f_16.X.q_bi.normalize(); // prevent drift and numerical errors
 
         missile.X = rk4_step(missile.X, mc,
             [&](double t, const State& X) { 
-                return missile.dXdt(t, X, a_n_i); 
+                return missile.f(t, X, a_n_i); 
             });
         missile.X.q_ib.normalize(); // prevent drift and numerical errors
         missile.X.q_bi.normalize(); // prevent drift and numerical errors

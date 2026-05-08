@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "aero/aero.hpp"
+#include "quat_rpy/quaternion_utils.hpp"
 
 
 struct PNresult{ // data from Pro-nav
@@ -18,15 +19,20 @@ class AMRAAM{
     // Assuming no change in COM/mass over time (for now)
     public:
         AMRAAM(double mass, double T_b, 
-            double b, double c_bar, double l) 
+            double b, double c_bar, double l,
+            Eigen::Vector3d vel_i) 
             :
             m_missile(mass), thrust(T_b),
             wingspan(b), MAC_chord_length(c_bar), missile_l(l) 
             {
                 ref_area = wingspan * MAC_chord_length;
+                // Initialize Quaternion and Velocity
+                X.q_bi = initialize_quaternion(vel_i);
+                X.q_ib = X.q_bi.conjugate(); 
+                X.vel_b = {vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
             }
         State X;
-        State dXdt(const double T, const State& X, Eigen::Vector3d a_norm) const;
+        State f(const double T, const State& X, Eigen::Vector3d a_norm) const;
         PNresult pro_nav_2d(double N, const State& X_missile, const State& X_targ, double collision_radius) const;
         Eigen::Vector3d pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const;
         Eigen::Vector3d pro_nav_6dof_ZEM(double N, const State& X_missile, const State& X_targ) const;
