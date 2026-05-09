@@ -17,3 +17,5 @@ struct SimHealth{
 
 
 // Check Sim divergence due to time step
+
+// store last and check divergence if same ICs
