@@ -1,14 +1,16 @@
 #include "simulation.hpp"
+#include "quat_rpy/quaternion_utils.hpp"
 #include "flight_object_headers/AMRAAM.hpp"
 #include "flight_object_headers/evader.hpp"
 #include "flight_object_headers/wind_vector.hpp"
 #include "sim_performance_tools/Timer.hpp"
 #include "aero/aero.hpp"
+#include "plotting/logging.hpp"
 #include <stdio.h>
 #include <iostream>
 #include <numeric>
 #include <matplot/matplot.h>
-#include <math.h>
+#include <cmath>
 #include <thread>
 
 struct log_row{ // option for full logging
@@ -18,8 +20,8 @@ struct log_row{ // option for full logging
 };
 
 int main(){
-    const double blast_radius = 2.0; //m
-    const double sim_end_time = 30.0;
+    constexpr double blast_radius = 2.0; //m
+    constexpr double sim_end_time = 30.0;
     monte_carlo_params mc{};
     Timer loop_timer_us;
     Timer rk4_timer_us;
@@ -39,57 +41,68 @@ int main(){
     gust.t_start = 0.0;
     gust.t_end = sim_end_time;
     gust.wind_vel = Eigen::Vector3d(0.0, 0.0, 0.0); // Passes A unit test where 0 wind = same position as without wind incorporated
-    f_16.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
-    missile.wind_vel_i = gust.wind_vel; // pass to object to calculate aerodynamic angles
     
     bool missile_collided = false;
     size_t counter = 0;
     std::vector<double> loop_times;
     loop_times.reserve(int(sim_end_time/mc.dt));
     Eigen::MatrixXd pos_log(int(sim_end_time/mc.dt)+1, 14);
+    Eigen::MatrixXd rpy_log(int(sim_end_time/mc.dt)+1, 7); //1 time 3 missile rpy, 3 target rpy
+    Eigen::MatrixXd aero_log(int(sim_end_time/mc.dt)+1, 5); // 1 time, angle of attack, sideslip, 3 Coeffs of drag lift sideforce for both missile and target
 
     while(mc.T <= sim_end_time && !missile_collided){
         // -- Timer --
         loop_timer_us.start_timing();
         
-        // -- Data Logging -- 
+        // -- Posittion Data Logging -- 
         Eigen::Vector3d a_n_i = missile.pro_nav_6dof(3.0, missile.X, f_16.X);
         pos_log(counter,0) = mc.T;
+
         // -- Positions (Inertial) --
         pos_log.block<1,3>(counter,1) = missile.X.pos_i.transpose();
         pos_log.block<1,3>(counter,4) = f_16.X.pos_i.transpose();
+
         // -- Attitude (Body, rpy) --
         pos_log.block<1,3>(counter,7) =  a_n_i.transpose();
-        // pos_log.block<1,3>(counter,10) =  a_n_i.transpose();
-        // pos_log.block<1,3>(counter,13) = a_n_i.transpose();
         pos_log.block<1,3>(counter,10) = missile.X.pos_i - f_16.X.pos_i; // ZEM
         pos_log(counter, pos_log.cols()-1) = (missile.X.pos_i - f_16.X.pos_i).norm(); // ZEM
+
+        // -- Object Roll Pitch Yaw Logging --
+        rpy_log(counter,0) = mc.T;
+        rpy_log.block<1,3>(counter,1) = (quaternion_to_euler_ZYX(missile.X.q_bi)*180/M_PI).transpose();
+        rpy_log.block<1,3>(counter,4) = (quaternion_to_euler_ZYX(f_16.X.q_bi)*180/M_PI).transpose();
+
+        // -- Aerodynamic Logging -- 
+        AeroAngles m_aero = missile.get_aero_angles(missile.X, gust.wind_vel);
+        AeroAngles f16_aero = f_16.get_aero_angles(f_16.X, gust.wind_vel);
+        aero_log(counter, 0) = mc.T;
+        aero_log(counter, 1) = m_aero.alpha * 180.0 / M_PI;
+        aero_log(counter, 2) = m_aero.beta  * 180.0 / M_PI;
+        aero_log(counter, 3) = f16_aero.alpha * 180.0 / M_PI;
+        aero_log(counter, 4) = f16_aero.beta  * 180.0 / M_PI;
         
-        f_16.X = rk4_step(f_16.X, mc, 
-            [&](double t, const State& X) { 
-                return f_16.f(t, X); 
+        f_16.X = rk4_step(f_16.X, mc,
+            [&](const State& X) {
+                return f_16.f(X, gust.wind_vel);
             });
-        f_16.X.q_ib.normalize(); // prevent drift and numerical errors
-        f_16.X.q_bi.normalize(); // prevent drift and numerical errors
+        f_16.X.q_ib.normalize();
+        f_16.X.q_bi.normalize();
 
         missile.X = rk4_step(missile.X, mc,
-            [&](double t, const State& X) { 
-                return missile.f(t, X, a_n_i); 
+            [&](const State& X) {
+                return missile.f(X, a_n_i, gust.wind_vel);
             });
-        missile.X.q_ib.normalize(); // prevent drift and numerical errors
-        missile.X.q_bi.normalize(); // prevent drift and numerical errors
+        missile.X.q_ib.normalize();
+        missile.X.q_bi.normalize();
 
-        // Missile Collision Detecion
-        if ((missile.X.pos_i - f_16.X.pos_i).norm() <= blast_radius ) {
-            std::cout << "Collision occured at time: " << mc.T << std::endl;
-            missile_collided = true;
-        }        
+        // -- Missile Collision Detection --
+        missile_collided = collision_detected(missile.X.pos_i, f_16.X.pos_i, blast_radius, mc.T);
         
         // -- Log Loop Time --
         double sim_loop_time = loop_timer_us.stop_timing();
-        loop_times.push_back(sim_loop_time); 
         
         // -- Increment --
+        loop_times.push_back(sim_loop_time); 
         counter++;
         mc.T += mc.dt;
     }
@@ -98,14 +111,16 @@ int main(){
     std::cout << "Average Sim Loop Time (us): " << average_sim_time << std::endl;
 
     // -- Plotting --
-    pos_log.conservativeResize(counter, Eigen::NoChange); // (WIP) find smart way to not hardcode "11"
+    pos_log.conservativeResize(counter, Eigen::NoChange);
+    rpy_log.conservativeResize(counter, Eigen::NoChange);  // add this
+    aero_log.conservativeResize(counter, Eigen::NoChange); // and this    
+    std::vector<double> t_vec = mat_to_vec(pos_log, 0, counter, false);
     std::vector<double> m_x = mat_to_vec(pos_log, 1, counter, false);
     std::vector<double> m_y = mat_to_vec(pos_log, 2, counter, false);
     std::vector<double> m_z = mat_to_vec(pos_log, 3, counter, true);
     std::vector<double> t_x = mat_to_vec(pos_log, 4, counter, false);
     std::vector<double> t_y = mat_to_vec(pos_log, 5, counter, false);
     std::vector<double> t_z = mat_to_vec(pos_log, 6, counter, true);
-    std::vector<double> t_vec = mat_to_vec(pos_log, 0, counter, false);
     std::vector<double> a_x = mat_to_vec(pos_log, 7, counter, false);
     std::vector<double> a_y = mat_to_vec(pos_log, 8, counter, false);
     std::vector<double> a_z = mat_to_vec(pos_log, 9, counter, false);
@@ -123,6 +138,7 @@ int main(){
     ax_a->xlabel("Time (s)");
     ax_a->ylabel("Acceleration (m/s^2)");
     ax_a->title("Guidance Acceleration Command (Inertial)");
+    // horizontal line for actuator limit
     matplot::legend();
 
     auto fig = matplot::figure(true);
@@ -171,20 +187,20 @@ int main(){
     ax->ylabel("Y position (m)");
     ax->zlabel("Z position (m)");
     ax->title("Interceptor vs F-16");
-    // equalize_axes(300.0, ax);
     matplot::legend();
     
     // -- Generate a Video of Trajectory (Replace path with your own)--
     char video_response;
-    std::cout << "Generate video and ZEM log of sim? [y]/[n]:  ";
+    std::cout << "Generate video and ZEM log of sim? [y/n]:  ";
     std::cin >> video_response;
     if(video_response == 'y' || video_response == 'Y'){
         // -- Edit path to your choice -- 
         generate_mp4("/Users/awolf/Code/6DOF-Missile-Sim/6DOF-Pursuit-RK4/cpp/sim_visuals", ax, fig); //generates a revolving mp4 of the sim for visibility / debugging
     }    
 
-    std::cout << "End of Simulation" << std::endl;
-    std::cout << pos_log << std::endl;
-    std::cout << "        t        missile_x   " << "  missile_y   " << "  missile_z   " << "target_x   " << "   target_y   " << "   target_z   " << "    a_x   " << "           a_y   " << "           a_z   " << "    ZEM_dist   " << std::endl;
+    display_positions(pos_log);    
+    display_rpy(rpy_log);
+    display_aero(aero_log);
+
     return 0;
 }

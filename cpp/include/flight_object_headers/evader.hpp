@@ -23,9 +23,11 @@ class Evader{
                     X.vel_b = {vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
                 }
         State X;
-        State f(const double T, const State& X) const;
+        State f(const State& X, Eigen::Vector3d wind_vel_i) const;
         Eigen::Matrix3d rotate_wind_to_body(const AeroAngles A) const;
-        Eigen::Vector3d wind_vel_i;
+        AeroAngles get_aero_angles(const State& X, const Eigen::Vector3d& wind_vel_i) const {
+            return aero_func.recalc_aero_angles(X, wind_vel_i);
+        }
         
         const double Jxz = 1331.4132386;
         const double Jxx = 12820.614648;

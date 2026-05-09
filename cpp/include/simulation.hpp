@@ -17,14 +17,13 @@ struct monte_carlo_params{
     double T = 0.0; //s
 };
 
-// 639.994    -511.578     -297.17     642.001    -513.016    -301.245    -7.76242    0.235373    -13.6828     4.76491
 template<typename S, typename deriv>
 inline S rk4_step(S X, monte_carlo_params& mc, deriv&& f){ // passes in states of various size and computes numerical integration
     // TODO: Lots of temp variables
-    S k1 = f(mc.T, X);
-    S k2 = f(mc.T + .5*mc.dt, X + .5*mc.dt*k1);
-    S k3 = f(mc.T + .5*mc.dt, X + .5*mc.dt*k2);
-    S k4 = f(mc.T + mc.dt, X + mc.dt*k3);
+    S k1 = f(X);
+    S k2 = f(X + .5*mc.dt*k1);
+    S k3 = f(X + .5*mc.dt*k2);
+    S k4 = f(X + mc.dt*k3);
     X = X + (mc.dt/6)*(k1 + 2*k2 + 2*k3 + k4);
     
     return X;
@@ -69,10 +68,19 @@ inline void equalize_axes(double size, matplot::axes_handle ax){
     ax->zlim({-size, size});
 }
 
-// Note to self: inline lets you have multiple defs
 inline Eigen::Vector3d actuator_limit(Eigen::Vector3d& cmd, double limit){
     if (cmd.norm() > limit){
         cmd = cmd.normalized() * limit;
     }
     return cmd;
+}
+
+inline bool collision_detected(Eigen::Vector3d& missile_pos_i, Eigen::Vector3d& target_pos_i, const double blast_radius, const double T) {
+    if ((missile_pos_i - target_pos_i).norm() <= blast_radius ) {
+        std::cout << "Collision occured at time: " << T << std::endl;
+        return true;
+    }      
+    else {
+        return false;  
+    }
 }

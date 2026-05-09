@@ -16,6 +16,7 @@ Eigen::Matrix3d AMRAAM::rotate_wind_to_body(const AeroAngles aero) const{
                     {-s_a, 0.0, c_a}};
     return R_wb;
 }
+
 Eigen::Vector3d AMRAAM::pro_nav_6dof(double N, const State& X_missile, const State& X_targ) const{
     /*
     Full 6-DOF Proportional Navigation using LOS rate. More Robust than ZEM to t_to_go explosion.
@@ -71,7 +72,7 @@ Eigen::Vector3d AMRAAM::pro_nav_6dof_ZEM(double N, const State& X_missile, const
     return a_norm_cmd;
 }
 
-State AMRAAM::f(const double T, const State& X, Eigen::Vector3d a_norm_i) const { // NED
+State AMRAAM::f(const State& X, Eigen::Vector3d a_norm_i, Eigen::Vector3d wind_vel_i) const { // NED
     State f = State();
     AeroAngles aero_angles_w = aerodynamics.recalc_aero_angles(X, wind_vel_i);
 
@@ -82,7 +83,8 @@ State AMRAAM::f(const double T, const State& X, Eigen::Vector3d a_norm_i) const 
     f.q_bi = (q_bi * omega_q);           // standard kinematic: dq_bi/dt = (1/2) q_bi * omega
     f.q_bi.coeffs() *= 0.5;
     f.q_ib.coeffs() = f.q_bi.conjugate().coeffs(); // d/dt(q_bi*) = (dq_bi/dt)*
-    Eigen::Quaterniond q_ib_new = q_ib; // alias used below
+    Eigen::Quaterniond q_ib_new = q_ib.normalized(); // alias used below
+    
     
     // -- Aerodynamic Coefficients -- (Wind Frame)
     AeroCoeffs C_aero;

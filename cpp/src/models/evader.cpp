@@ -18,19 +18,19 @@ Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     return R_wb;
 }    
 
-State Evader::f(const double T, const State& X) const{ // const function means it wont modify the variables
+State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const function means it wont modify the variables
     State f = State();
     AeroAngles aero_angles_w = aero_func.recalc_aero_angles(X, wind_vel_i);
     
     // -- f.q -- (Body to Inertial)
-    Eigen::Quaterniond q_ib = X.q_ib; // X.q is body to inertial
     Eigen::Quaterniond q_bi = X.q_bi;
+    Eigen::Quaterniond q_ib = X.q_ib; // X.q is body to inertial
     Eigen::Quaterniond omega_q(0.0, X.omega_b(0), X.omega_b(1), X.omega_b(2));
     f.q_bi = (q_bi * omega_q);
     f.q_bi.coeffs() *= 0.5;
     f.q_ib.coeffs() = f.q_bi.conjugate().coeffs();
-    Eigen::Quaterniond q_ib_new = q_ib; // alias used below
-    
+    Eigen::Quaterniond q_ib_new = q_ib.normalized(); // alias used below
+
     // -- Aerodynamic Coefficients --
     AeroCoeffs C_aero;
     Eigen::Vector3d wind_vel_b = q_ib_new * wind_vel_i;
