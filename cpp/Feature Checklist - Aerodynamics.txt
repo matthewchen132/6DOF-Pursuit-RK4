@@ -1,9 +1,8 @@
 Checklist
- [*] Pro-Nav acceleration controller (Prio 1 -> fixes collision)
- [1] Control, Ch6 Wiley
- [] Plot Aero Coeffs / Angles of attack 
- [] Plot Angle of body
-[] Asserts / Const correctness
+ [] Pitch Controller
+ [] Control, Ch6 Wiley
+ [] Plot Aero Coeffs alongside Angles of attack 
+ [] Asserts / Const correctness
 
 Wiley Readings:
 [] 3.9 FeedbackControl / 213
@@ -26,3 +25,5 @@ Done:
  [X] Fix Dynamic pressure to be based of V_rel = V_air - V_obj_i
  [X] Wiley section 2.3 (C's of aero and moment)
  [X] Target Y Velocity is not updating, constant throughout.
+ [X] Pro-Nav acceleration
+ [X] Plot Angle of body
