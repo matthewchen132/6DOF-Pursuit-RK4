@@ -49,7 +49,8 @@ class aero_functions{
         }
 
         Eigen::Vector3d C_moments_missile(const Eigen::Vector3d& omega, const AeroAngles& aero_angles, 
-                                        const double wingspan, const double MAC_chord_length, const Eigen::Vector3d& V_rel) const {       
+                                        const double wingspan, const double MAC_chord_length, const Eigen::Vector3d& V_rel,
+                                        const double Cm_e, const double elevator_angle) const {       
             /*
                 Returns an Eigen::Vector3d representing translational force
             */
@@ -74,7 +75,7 @@ class aero_functions{
             double q_hat = (c_bar/(2*V)) * omega(1);
             double r_hat = (b/(2*V)) * omega(2);
             C_m(0) = Cl_0 + (Cl_beta*beta) + Cl_p * p_hat; // rolling moment (C_l)
-            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat; // pitch moment (C_m)
+            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat + Cm_e * elevator_angle; // pitch moment (C_m)
             C_m(2) = Cn_0 + (Cn_beta*beta) + Cn_r * r_hat; // yaw moment (C_r)
 
             return C_m;
@@ -103,7 +104,8 @@ class aero_functions{
         }
 
         Eigen::Vector3d C_moments_f16(const Eigen::Vector3d& omega, const AeroAngles& aero_angles, 
-                                        const double wingspan, const double MAC_chord_length, const Eigen::Vector3d& V_rel) const {       
+                                        const double wingspan, const double MAC_chord_length, const Eigen::Vector3d& V_rel,
+                                        const double Cm_e, const double elevator_angle) const {       
             /*
                 Returns an Eigen::Vector3d representing translational force
             */
@@ -136,7 +138,7 @@ class aero_functions{
             double q_hat = (c_bar/(2*V)) * omega(1);
             double r_hat = (b/(2*V)) * omega(2);
             C_m(0) = Cl_0 + (Cl_beta*beta) + Cl_p * p_hat; // rolling moment (C_l)
-            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat; // pitch moment (C_m)
+            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat + + Cm_e * elevator_angle; // pitch moment (C_m)
             C_m(2) = Cn_0 + (Cn_beta*beta) + Cn_r * r_hat; // yaw moment (C_r)
 
             return C_m;

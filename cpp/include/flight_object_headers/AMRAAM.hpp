@@ -44,7 +44,7 @@ class AMRAAM{
             return aerodynamics.recalc_aero_angles(X, wind_vel_i);
         }
 
-        private:
+    private:
         aero_functions aerodynamics; // Aerodynamic helpers
         double ref_area; //m^2
         const double m_missile; // kg
