@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include "control_objects/elevator.hpp"
 
 Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     // returns the rotation matrix from WIND -> BODY. 
@@ -30,29 +31,20 @@ State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const func
     f.q_bi.coeffs() *= 0.5;
     f.q_ib.coeffs() = f.q_bi.conjugate().coeffs();
     Eigen::Quaterniond q_ib_new = q_ib.normalized(); // alias used below
-
+    
     // -- Aerodynamic Coefficients --
     AeroCoeffs C_aero;
     Eigen::Vector3d wind_vel_b = q_ib_new * wind_vel_i;
     Eigen::Vector3d V_rel = X.vel_b - wind_vel_b;
     C_aero.C_translational = aero_func.C_translations_f16(aero_angles_w);
-    C_aero.C_moments = aero_func.C_moments_f16(X.omega_b, aero_angles_w, wingspan, MAC_chord_length, V_rel);
+    C_aero.C_moments = aero_func.C_moments_f16(X.omega_b, aero_angles_w, wingspan, 
+                                                MAC_chord_length, V_rel, elevator.Cm_e, elevator.elevator_angle);
     Eigen::Matrix3d R_wb = rotate_wind_to_body(aero_angles_w); // Rotation Matrix for wind frame -> Body frame.
     
     // -- Dynamic Pressure -- (Wind Frame)
     const double v_mag = std::max(V_rel.norm(), 1e-6);
     Eigen::Vector3d v_hats = V_rel / v_mag;
     double dyn_pressure = 0.5 * density * v_mag * v_mag; // NOTE: Don't need to apply v_hats to L,D,Y as it is already encoded into the wind frame.
-    
-    // ---- f.pos ---- (Inertial)
-    f.pos_i = q_bi * X.vel_b;
-    
-    // ---- Thrust ---- (Body)
-    Eigen::Vector3d T_b(thrust,0,0);
-
-     // -- Gravity (World to Body) --
-    const Eigen::Vector3d g_i(0.0, 0.0, 9.81); 
-    Eigen::Vector3d g_b = q_ib_new * g_i;
 
     // -- Aero Forces -- (Wind Frame)
     double L = dyn_pressure * ref_area * C_aero.C_translational(0);
@@ -61,9 +53,25 @@ State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const func
     Eigen::Vector3d F_aero_w(-D, Y, -L);
     Eigen::Vector3d F_aero_b = R_wb * F_aero_w; // Rotate to Body Frame
     
+    // ---- Thrust ---- (Body)
+    Eigen::Vector3d T_b(thrust,0,0);
+    
     // -- Aerodynamic Forces -- (Body Frame)
     Eigen::Vector3d v_b = (1.0/m_evader) * (T_b + F_aero_b) - X.omega_b.cross(X.vel_b) + g_b;
     f.vel_b = v_b;
+
+    // -- Elevator --
+    Elevator elevator = Elevator(r_cg_elevator, aero_angles_w, X.q_bi, f.q_bi, J);
+
+
+    // ---- f.pos ---- (Inertial)
+    f.pos_i = q_bi * X.vel_b;
+    
+
+     // -- Gravity (World to Body) --
+    const Eigen::Vector3d g_i(0.0, 0.0, 9.81); 
+    Eigen::Vector3d g_b = q_ib_new * g_i;
+
 
     // -- Moments -- (Body)
     Eigen::Vector3d M_aero_b;

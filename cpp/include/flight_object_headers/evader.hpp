@@ -14,8 +14,8 @@ class Evader{
                 m_evader(m), thrust(T_b), 
                 wingspan(b), MAC_chord_length(c_bar), length(l)
                 {
-                    ref_area = wingspan * MAC_chord_length;
-                    Eigen::Vector3d r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0);
+                    r_cg_cp = Eigen::Vector3d(-length, 0.0, 0.0);
+                    r_cg_elevator = Eigen::Vector3d(-length*1.2, 0.0, 0.0);
                     ref_area = wingspan * MAC_chord_length;
                     // Initialize Quaternion and Velocity
                     X.q_bi = initialize_quaternion(vel_i);
@@ -28,13 +28,13 @@ class Evader{
         AeroAngles get_aero_angles(const State& X, const Eigen::Vector3d& wind_vel_i) const {
             return aero_func.recalc_aero_angles(X, wind_vel_i);
         }
-        
+        Eigen::Vector3d r_cg_cp;
+        Eigen::Vector3d r_cg_elevator;
+        // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         const double Jxz = 1331.4132386;
         const double Jxx = 12820.614648;
         const double Jyy = 75673.623725;
         const double Jzz = 85552.113395;
-        
-        // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         Eigen::Matrix3d J{{Jxx, 0.0, -Jxz},
         {0.0, Jyy, 0.0},
         {-Jxz, 0.0, Jzz}};     
