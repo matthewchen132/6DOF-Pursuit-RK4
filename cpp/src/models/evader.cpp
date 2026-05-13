@@ -5,7 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include "control_objects/elevator.hpp"
+#include "control/elevator.hpp"
 
 Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     // returns the rotation matrix from WIND -> BODY. 
@@ -32,6 +32,9 @@ State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const func
     f.q_ib.coeffs() = f.q_bi.conjugate().coeffs();
     Eigen::Quaterniond q_ib_new = q_ib.normalized(); // alias used below
     
+    // -- Elevator Control Calculation
+    Elevator elevator = Elevator(r_cg_elevator, aero_angles_w, X.q_bi, f.q_bi, J, m_evader * 9.81);
+
     // -- Aerodynamic Coefficients --
     AeroCoeffs C_aero;
     Eigen::Vector3d wind_vel_b = q_ib_new * wind_vel_i;
@@ -56,22 +59,16 @@ State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const func
     // ---- Thrust ---- (Body)
     Eigen::Vector3d T_b(thrust,0,0);
     
-    // -- Aerodynamic Forces -- (Body Frame)
-    Eigen::Vector3d v_b = (1.0/m_evader) * (T_b + F_aero_b) - X.omega_b.cross(X.vel_b) + g_b;
-    f.vel_b = v_b;
-
-    // -- Elevator --
-    Elevator elevator = Elevator(r_cg_elevator, aero_angles_w, X.q_bi, f.q_bi, J);
-
-
-    // ---- f.pos ---- (Inertial)
-    f.pos_i = q_bi * X.vel_b;
-    
-
      // -- Gravity (World to Body) --
     const Eigen::Vector3d g_i(0.0, 0.0, 9.81); 
     Eigen::Vector3d g_b = q_ib_new * g_i;
 
+    // -- Aerodynamic Forces -- (Body Frame)
+    Eigen::Vector3d v_b = (1.0/m_evader) * (T_b + F_aero_b) - X.omega_b.cross(X.vel_b) + g_b;
+    f.vel_b = v_b;
+
+    // ---- f.pos ---- (Inertial)
+    f.pos_i = q_bi * X.vel_b;
 
     // -- Moments -- (Body)
     Eigen::Vector3d M_aero_b;

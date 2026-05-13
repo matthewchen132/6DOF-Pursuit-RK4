@@ -137,7 +137,7 @@ class aero_functions{
             double q_hat = (c_bar/(2*V)) * omega(1);
             double r_hat = (b/(2*V)) * omega(2);
             C_m(0) = Cl_0 + (Cl_beta*beta) + Cl_p * p_hat; // rolling moment (C_l)
-            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat + + Cm_e * elevator_angle; // pitch moment (C_m)
+            C_m(1) = Cm_0 + (Cm_alpha*alpha) + Cm_q * q_hat + Cm_e * elevator_angle; // pitch moment (C_m)
             C_m(2) = Cn_0 + (Cn_beta*beta) + Cn_r * r_hat; // yaw moment (C_r)
 
             return C_m;

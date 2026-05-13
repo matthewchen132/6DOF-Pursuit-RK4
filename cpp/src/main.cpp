@@ -62,7 +62,7 @@ int main(){
         pos_log.block<1,3>(counter,1) = missile.X.pos_i.transpose();
         pos_log.block<1,3>(counter,4) = f_16.X.pos_i.transpose();
 
-        // -- Attitude (Body, rpy) --
+        // -- A_norm / ZEM  --
         pos_log.block<1,3>(counter,7) =  a_n_i.transpose();
         pos_log.block<1,3>(counter,10) = missile.X.pos_i - f_16.X.pos_i; // ZEM
         pos_log(counter, pos_log.cols()-1) = (missile.X.pos_i - f_16.X.pos_i).norm(); // ZEM

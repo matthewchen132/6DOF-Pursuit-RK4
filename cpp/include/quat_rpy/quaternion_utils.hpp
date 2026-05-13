@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <stdio.h>
 #include <vector>
-#include <State.hpp>
+#include <objects/State.hpp>
 #include <cmath>
 
 inline Eigen::Quaterniond initialize_quaternion(const Eigen::Vector3d& v_i) {

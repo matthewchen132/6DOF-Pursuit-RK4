@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <cmath>
-#include <State.hpp>
+#include <objects/State.hpp>
 #include "aero/aero.hpp"
 
 class flight_object{
