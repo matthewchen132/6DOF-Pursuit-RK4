@@ -56,10 +56,12 @@ class AMRAAM{
         const double Jxx =0.5 * m_missile * r*r;
         const double Jyy = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
         const double Jzz = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
+        
         // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         const Eigen::Matrix3d J{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 
                             {0.0, 0.0, Jzz}}; //inertial matrix, x-z and                         
+        
         // -- Coeff. of Drag, Lift, Sideforce --
         const Eigen::Matrix3d C{{Jxx, 0.0, 0.0}, 
                             {0.0, Jyy, 0.0}, 

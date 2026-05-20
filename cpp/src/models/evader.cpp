@@ -19,7 +19,7 @@ Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     return R_wb;
 }    
 
-State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const function means it wont modify the variables
+State Evader::f(const State& X, const Eigen::Vector3d wind_vel_i, double dt) const{ // const function means it wont modify the variables
     State f = State();
     AeroAngles aero_angles_w = aero_func.recalc_aero_angles(X, wind_vel_i);
     
@@ -32,16 +32,13 @@ State Evader::f(const State& X, Eigen::Vector3d wind_vel_i) const{ // const func
     f.q_ib.coeffs() = f.q_bi.conjugate().coeffs();
     Eigen::Quaterniond q_ib_new = q_ib.normalized(); // alias used below
     
-    // -- Elevator Control Calculation
-    Elevator elevator = Elevator(r_cg_elevator, aero_angles_w, X.q_bi, f.q_bi, J, m_evader * 9.81);
-
     // -- Aerodynamic Coefficients --
     AeroCoeffs C_aero;
     Eigen::Vector3d wind_vel_b = q_ib_new * wind_vel_i;
     Eigen::Vector3d V_rel = X.vel_b - wind_vel_b;
     C_aero.C_translational = aero_func.C_translations_f16(aero_angles_w);
     C_aero.C_moments = aero_func.C_moments_f16(X.omega_b, aero_angles_w, wingspan, 
-                                                MAC_chord_length, V_rel, elevator.Cm_e, elevator.elevator_angle);
+                                                MAC_chord_length, V_rel, elevator.Cm_e, elevator.delta_e);
     Eigen::Matrix3d R_wb = rotate_wind_to_body(aero_angles_w); // Rotation Matrix for wind frame -> Body frame.
     
     // -- Dynamic Pressure -- (Wind Frame)

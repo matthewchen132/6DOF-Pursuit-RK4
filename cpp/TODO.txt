@@ -1,8 +1,9 @@
 Checklist
- [] Pitch Controller
- [] Control, Ch6 Wiley
+ [*] Pitch Controller
+ [*] Simulated Sensing and Noisy State
+    [] Monte Carlo with average ZEM, time_to_collide, collision rate.
  [] Plot Aero Coeffs alongside Angles of attack 
- [] Asserts / Const correctness
+ [] Asserts / Limits (Stall Limit)
 
 Wiley Readings:
 [] 3.9 FeedbackControl / 213
@@ -11,7 +12,7 @@ Wiley Readings:
 [] 5.4 TrackingA Command / 413
 
 Future:
-[] CBF / Vortex
+[] CBF?
 [] mark point of miss (direction change in ZEM Error)
 [] limit(var, 1e-6) -- Guards.hpp
 [] detect_NaN(logs) -- Guards.hpp
@@ -19,6 +20,7 @@ Future:
 Unit Testing Examples
  [] Use lldb and get familiar
  [] EXPECT_NEAR for 0 velocities
+ 
 
 Done:
  [X] Model a linear variation with CL, CD, CY, Cl, Cm, Cn (No lookup table available)

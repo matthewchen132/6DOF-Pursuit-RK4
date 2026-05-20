@@ -2,7 +2,7 @@
 
 class pitch_eq{
     /*
-    Finds the pitching trim state (alpha, V, and elevator angle) at which moments are in balance.
+    Uses Newton Raphson to find the pitching trim state (alpha, V, and elevator angle) at which moments are in balance.
     
     Feed this into the PI controller such that:
      -   e = q_cmd - q_current
