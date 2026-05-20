@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
 #include <cmath>
-#include <State.hpp>
+#include <objects/State.hpp>
 #include "aero/aero.hpp"
 #include "quat_rpy/quaternion_utils.hpp"
+#include "control/elevator.hpp"
 
 class Evader{
     public:
@@ -19,17 +20,24 @@ class Evader{
                     ref_area = wingspan * MAC_chord_length;
                     // Initialize Quaternion and Velocity
                     X.q_bi = initialize_quaternion(vel_i);
-                    X.q_ib = X.q_bi.conjugate(); 
+                    X.q_ib = X.q_bi.conjugate();
                     X.vel_b = {vel_i.norm(), 0.0, 0.0}; // Puts all velocity in body frame nose direction
+                    pitch_controller = ElevatorControl(Kp, Kd, q_cmd, tau, delta_e_max_rad);
                 }
         State X;
-        State f(const State& X, Eigen::Vector3d wind_vel_i) const;
+        State f(const State& X, const Eigen::Vector3d wind_vel_i, double dt) const;
         Eigen::Matrix3d rotate_wind_to_body(const AeroAngles A) const;
         AeroAngles get_aero_angles(const State& X, const Eigen::Vector3d& wind_vel_i) const {
             return aero_func.recalc_aero_angles(X, wind_vel_i);
         }
         Eigen::Vector3d r_cg_cp;
         Eigen::Vector3d r_cg_elevator;
+        ElevatorControl pitch_controller;
+        Elevator elevator;
+        void update_actuator(double dt){
+            double d_cmd = elevator.delta_cmd(pitch_controller, X.omega_b(1));
+            elevator.delta_actual(pitch_controller, d_cmd, dt);
+        }
         // -- Inertia Tensor with Symmetry across the XZ Plane (Body) -- 
         const double Jxz = 1331.4132386;
         const double Jxx = 12820.614648;
@@ -47,4 +55,11 @@ class Evader{
         const double MAC_chord_length; // meters
         const double length; // meters
         const double density = 1.2754; // kg / m^3
+        // -- Elevator Control --
+        const double Kp = 3.0;
+        const double Kd = 0.0;
+        const double q_cmd = 0.0; // pitch rate desired
+        const double tau = 0.0495; // Lag Compensator term 
+        const double delta_e_max_rad = 25.0 * M_PI /180.0;
+
 };

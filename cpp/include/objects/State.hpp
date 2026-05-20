@@ -12,11 +12,7 @@ struct State {
     Eigen::Quaterniond q_ib = Eigen::Quaterniond::Identity();
     Eigen::Quaterniond q_bi = Eigen::Quaterniond::Identity();
     Eigen::Vector3d omega_b = Eigen::Vector3d::Zero();
-    // -- Crucial angles for Aircraft Forces and Moments
-    double alpha = 0.0; // angle of attack
-    double beta = 0.0; // sideslip angle
 };
-// right mult
 inline State operator*(const State& s, double c){
     State output;
     output.pos_i = s.pos_i * c;
@@ -26,7 +22,6 @@ inline State operator*(const State& s, double c){
     output.omega_b = s.omega_b * c;
     return output;
 }
-// left mult
 inline State operator*(double c, const State& s){
     State output;
     output.pos_i = c * s.pos_i;
@@ -36,7 +31,6 @@ inline State operator*(double c, const State& s){
     output.omega_b = c * s.omega_b;
     return output;
 }
-// addition
 inline State operator+(const State& s1, const State& s2){
     State s_sum;
     s_sum.pos_i = s1.pos_i + s2.pos_i;

@@ -1,11 +1,17 @@
+// -- Simulation tools -- 
 #include "simulation.hpp"
 #include "quat_rpy/quaternion_utils.hpp"
+#include "sim_performance_tools/Timer.hpp"
+
+// -- Objects --
 #include "flight_object_headers/AMRAAM.hpp"
 #include "flight_object_headers/evader.hpp"
 #include "flight_object_headers/wind_vector.hpp"
-#include "sim_performance_tools/Timer.hpp"
-#include "aero/aero.hpp"
-#include "plotting/logging.hpp"
+
+#include "aero/aero.hpp" // Aero
+#include "plotting/printing.hpp" // Plotting
+
+// -- libraries --
 #include <stdio.h>
 #include <iostream>
 #include <numeric>
@@ -62,7 +68,7 @@ int main(){
         pos_log.block<1,3>(counter,1) = missile.X.pos_i.transpose();
         pos_log.block<1,3>(counter,4) = f_16.X.pos_i.transpose();
 
-        // -- Attitude (Body, rpy) --
+        // -- A_norm / ZEM  --
         pos_log.block<1,3>(counter,7) =  a_n_i.transpose();
         pos_log.block<1,3>(counter,10) = missile.X.pos_i - f_16.X.pos_i; // ZEM
         pos_log(counter, pos_log.cols()-1) = (missile.X.pos_i - f_16.X.pos_i).norm(); // ZEM
@@ -83,10 +89,11 @@ int main(){
         
         f_16.X = rk4_step(f_16.X, mc,
             [&](const State& X) {
-                return f_16.f(X, gust.wind_vel);
+                return f_16.f(X, gust.wind_vel, mc.dt);
             });
         f_16.X.q_ib.normalize();
         f_16.X.q_bi.normalize();
+        f_16.update_actuator(mc.dt);
 
         missile.X = rk4_step(missile.X, mc,
             [&](const State& X) {
@@ -124,22 +131,6 @@ int main(){
     std::vector<double> a_x = mat_to_vec(pos_log, 7, counter, false);
     std::vector<double> a_y = mat_to_vec(pos_log, 8, counter, false);
     std::vector<double> a_z = mat_to_vec(pos_log, 9, counter, false);
-
-    // -- Guidance Acceleration Plot --
-    auto fig_a = matplot::figure(true);
-    auto ax_a = fig_a->current_axes();
-    ax_a->hold(matplot::on);
-    auto a_x_plot = ax_a->plot(t_vec, a_x);
-    a_x_plot->display_name("a_x");
-    auto a_y_plot = ax_a->plot(t_vec, a_y);
-    a_y_plot->display_name("a_y");
-    auto a_z_plot = ax_a->plot(t_vec, a_z);
-    a_z_plot->display_name("a_z");
-    ax_a->xlabel("Time (s)");
-    ax_a->ylabel("Acceleration (m/s^2)");
-    ax_a->title("Guidance Acceleration Command (Inertial)");
-    // horizontal line for actuator limit
-    matplot::legend();
 
     auto fig = matplot::figure(true);
     auto ax = fig->current_axes();
