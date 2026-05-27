@@ -6,9 +6,15 @@
 struct AeroCoeffs{
     // Translational Aerodynamic Coefficients
     Eigen::Vector3d C_translational = Eigen::Vector3d(0.0, 0.0, 0.0); // CL, CD, CY
-    
     // Moment Aerodynamic Coefficients
     Eigen::Vector3d C_moments = Eigen::Vector3d(0.0, 0.0, 0.0); // C_l, C_m, C_r
+}; // TODO Can separate AeroCoeffs into AeroMomentCoeffs and AeroTranslationalCoeffs
+
+struct AeroMomentCoeffs{
+
+};
+struct AeroTranslationalCoeffs{
+
 };
 
 struct AeroAngles{
@@ -61,9 +67,9 @@ class aero_functions{
             double c_bar = MAC_chord_length;
             
             // -- Moments Simplified --
-            double Cl_0 = 0.0, Cl_beta = -0.1, Cl_p = -0.5;
-            double Cm_0 = 0.0, Cm_alpha = -1.0, Cm_q = -0.25;
-            double Cn_0 = 0.0, Cn_beta = 0.1, Cn_r = -0.2;
+            constexpr double Cl_0 = 0.0, Cl_beta = -0.1, Cl_p = -0.5;
+            constexpr double Cm_0 = 0.0, Cm_alpha = -1.0, Cm_q = -0.25;
+            constexpr double Cn_0 = 0.0, Cn_beta = 0.1, Cn_r = -0.2;
 
             assert((Cl_p < 0) && "Cl_p must be negative");
             assert((Cm_q < 0) && "Cm_q must be negative");
@@ -89,9 +95,9 @@ class aero_functions{
             double alpha = aero_angles.alpha;
             double beta  = aero_angles.beta;
 
-            double CL0 = 0.0, CL_alpha = 5.0;
-            double CD0 = 0.02, CD_alpha2 = 0.3;
-            double CY_beta = -0.98;
+            constexpr double CL0 = 0.0, CL_alpha = 5.0;
+            constexpr double CD0 = 0.02, CD_alpha2 = 0.3;
+            constexpr double CY_beta = -0.98;
 
             double CL = CL0 + CL_alpha * alpha;
             double CD = CD0 + CD_alpha2 * alpha * alpha;
@@ -116,17 +122,17 @@ class aero_functions{
             double c_bar = MAC_chord_length;
             
             // -- Moments Simplified --
-            double Cl_0     = 0.0;
-            double Cl_beta  = -0.12;   // roll due to sideslip (dihedral effect)
-            double Cl_p     = -0.5;    // roll damping
+            constexpr double Cl_0     = 0.0;
+            constexpr double Cl_beta  = -0.12;   // roll due to sideslip (dihedral effect)
+            constexpr double Cl_p     = -0.5;    // roll damping
 
-            double Cm_0     = 0.05;
-            double Cm_alpha = -0.8;    // weaker stability (relaxed stability aircraft)
-            double Cm_q     = -10.0;   // STRONG pitch damping
+            constexpr double Cm_0     = 0.05;
+            constexpr double Cm_alpha = -0.8;    // weaker stability (relaxed stability aircraft)
+            constexpr double Cm_q     = -10.0;   // STRONG pitch damping
 
-            double Cn_0     = 0.0;
-            double Cn_beta  = 0.25;    // strong weathercock stability
-            double Cn_r     = -0.35;   // yaw damping
+            constexpr double Cn_0     = 0.0;
+            constexpr double Cn_beta  = 0.25;    // strong weathercock stability
+            constexpr double Cn_r     = -0.35;   // yaw damping
 
             assert((Cl_p < 0) && "Cl_p must be negative");
             assert((Cm_q < 0) && "Cm_q must be negative");
@@ -153,13 +159,13 @@ class aero_functions{
             double beta  = aero_angles.beta;
 
             // -- F-16 Coeff. Approximation  --
-            double CL0        = 0.2;
-            double CL_alpha   = 4.5;    // lift slope (~4–6 per rad typical)
+            constexpr double CL0        = 0.2;
+            constexpr double CL_alpha   = 4.5;    // lift slope (~4–6 per rad typical)
 
-            double CD0        = 0.02;
-            double CD_alpha2  = 0.3;    // quadratic drag growth
+            constexpr double CD0        = 0.02;
+            constexpr double CD_alpha2  = 0.3;    // quadratic drag growth
 
-            double CY_beta    = -0.98;  // sideforce from sideslip
+            constexpr double CY_beta    = -0.98;  // sideforce from sideslip
 
             double CL = CL0 + CL_alpha * alpha;
             double CD = CD0 + CD_alpha2 * alpha * alpha;
