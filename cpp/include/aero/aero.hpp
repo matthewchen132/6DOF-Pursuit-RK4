@@ -1,21 +1,20 @@
 #pragma once
 #include <Eigen/Dense>
 #include <cmath>
+#include "objects/State.hpp"
 #include <assert.h>
 
 struct AeroCoeffs{
-    // Translational Aerodynamic Coefficients
     Eigen::Vector3d C_translational = Eigen::Vector3d(0.0, 0.0, 0.0); // CL, CD, CY
-    // Moment Aerodynamic Coefficients
     Eigen::Vector3d C_moments = Eigen::Vector3d(0.0, 0.0, 0.0); // C_l, C_m, C_r
 }; // TODO Can separate AeroCoeffs into AeroMomentCoeffs and AeroTranslationalCoeffs
 
-struct AeroMomentCoeffs{
+// struct AeroMomentCoeffs{
 
-};
-struct AeroTranslationalCoeffs{
+// };
+// struct AeroTranslationalCoeffs{
 
-};
+// };
 
 struct AeroAngles{
     double alpha; // Angle of attack
@@ -102,7 +101,6 @@ class aero_functions{
             double CL = CL0 + CL_alpha * alpha;
             double CD = CD0 + CD_alpha2 * alpha * alpha;
             double CY = CY_beta * beta;
-
             C << CL, CD, CY;
 
             return C;
@@ -161,10 +159,8 @@ class aero_functions{
             // -- F-16 Coeff. Approximation  --
             constexpr double CL0        = 0.2;
             constexpr double CL_alpha   = 4.5;    // lift slope (~4–6 per rad typical)
-
             constexpr double CD0        = 0.02;
             constexpr double CD_alpha2  = 0.3;    // quadratic drag growth
-
             constexpr double CY_beta    = -0.98;  // sideforce from sideslip
 
             double CL = CL0 + CL_alpha * alpha;

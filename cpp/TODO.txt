@@ -1,8 +1,9 @@
 Checklist
- [*] Pitch Controller
  [*] Simulated Sensing and Noisy State
-    [] Monte Carlo with average ZEM, time_to_collide, collision rate.
+    [] Sensor Noise Model
+    [] Monte Carlo with average ZEM, collision rate, vs noise levels.
  [] Plot Aero Coeffs alongside Angles of attack 
+ [] Pitch Controller Tuning + (PI)
  [] Asserts / Limits (Stall Limit)
 
 Wiley Readings:
@@ -23,6 +24,7 @@ Unit Testing Examples
  
 
 Done:
+ [X] Pitch Controller Proportional Only
  [X] Model a linear variation with CL, CD, CY, Cl, Cm, Cn (No lookup table available)
  [X] Fix Dynamic pressure to be based of V_rel = V_air - V_obj_i
  [X] Wiley section 2.3 (C's of aero and moment)

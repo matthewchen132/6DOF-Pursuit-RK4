@@ -7,7 +7,6 @@
 #include "flight_object_headers/AMRAAM.hpp"
 #include "flight_object_headers/evader.hpp"
 #include "flight_object_headers/wind_vector.hpp"
-
 #include "aero/aero.hpp" // Aero
 #include "plotting/printing.hpp" // Plotting
 

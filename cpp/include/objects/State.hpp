@@ -1,7 +1,7 @@
 #pragma once   
 #include <Eigen/Dense>
 
-struct State {
+struct State{
     /* 
         b = body frame
         i = inertial frame
