@@ -1,11 +1,12 @@
-#include "flight_object_headers/evader.hpp"
 #include "aero/aero.hpp"
+#include "control/elevator.hpp"
+#include "flight_object_headers/evader.hpp"
+#include "objects/SensedState.hpp"
 #include <math.h>
 #include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include "control/elevator.hpp"
 
 Eigen::Matrix3d Evader::rotate_wind_to_body(const AeroAngles A) const{
     // returns the rotation matrix from WIND -> BODY. 

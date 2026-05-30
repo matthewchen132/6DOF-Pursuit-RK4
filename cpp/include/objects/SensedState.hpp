@@ -1,81 +1,70 @@
-#pragma once   
+#pragma once
 #include <Eigen/Dense>
 #include <random>
+#include "objects/SimConfig.hpp"
+#include "objects/State.hpp"
+#include "sensors/IMU.hpp"
 
+/*
+Produces a noisy State from simulated IMU + GPS readings.
+Call update_noisy_state() each timestep; the returned State can be
+substituted directly into Evader::f() in place of the true State.
 
-// IMU_bias
-// accel_bias_ += sigma_accel_walk * std::sqrt(dt) * randomVec();
-// gyro_bias_  += sigma_gyro_walk  * std::sqrt(dt) * randomVec();
-class SensorState {;
-    /* 
-        b = body frame
-        i = inertial frame
-        w = wind frame
+[X] Angular / Velocity Random Walk (White Noise) via IMU class
+[X] GPS Simple White Noise on pos_i
+[ ] Brown Noise / Rate Random Walk (IMU bias drift)
+[ ] Pink Noise / Bias Instability (Gauss-Markov)
+[ ] Realistic sensor poll rates + dead reckoning between GPS updates
+[ ] Kalman filter correction step
+*/
 
-        Noisy State Object
+class SensorState {
+    /*
+    Does NOT account for: Scale Factor, Non-orthogonality, Nonlinearity,
+    Turn-on DC bias, g^2 sensitivity.
     */
-    public:
-        SensorState(Eigen::Vector3d accel_reading, double dt) 
-        :
-        accel_b(accel_reading)
-        {}
-        struct IMU_reading{
-            Eigen::Vector3d omega_b = Eigen::Vector3d::Zero();
-            Eigen::Vector3d accel_b = Eigen::Vector3d::Zero(); // 
-        };
-        Eigen::Vector3d pos_i = Eigen::Vector3d::Zero();
-        Eigen::Vector3d vel_b = Eigen::Vector3d::Zero();    
-        Eigen::Quaterniond q_ib = Eigen::Quaterniond::Identity();
-        Eigen::Quaterniond q_bi = Eigen::Quaterniond::Identity();
-        double gyro_variance = 0.0;
-        double accel_variance = 0.0;
-        IMU_reading add_random_walk_bias(const double accel_hourly_bias, const double gyro_hourly_bias, dt){
-            /*
-            Adds bias per time step
-             - Bias is varying, not constant. 
-             - LARGEST SOURCE OF ERROR
-            */ 
+public:
+    SensorState(double dt, const SimConfig& cfg = SimConfig())
+    :
+    imu_(dt, cfg),
+    gps_noise_dist(0.0, 0.5),
+    rng(make_rng(cfg)),
+    dt_(dt)
+    {}
 
-        }
-        IMU_reading add_noise(const double accel_hourly_bias, const double gyro_hourly_bias, dt){
-            // Adds white noise per time step -> integration creates a random walk
-        }
-        Eigen::Vector3d g_sensitivity(Eigen::Vector3d a_b){
-            Linear translation add
-            /*
-                a_coriolis = 2w x v_center
-                - With linear acceleration, we can corrupt a_coriolis, affecting our angular_velocity.
-            */
-        }
-    private:
-        std::mt19937_64 rng_;
-        std::normal_distribution<double> dist_;
+    // true_accel: specific force from dynamics (f.vel_b from Evader::f)
+    State update_noisy_state(const State& X_true, const Eigen::Vector3d& true_accel) {
+        imu_.update(X_true.omega_b, true_accel);
+
+        // GPS: corrupt inertial position with white noise
+        X_noisy_.pos_i = X_true.pos_i + noise3(gps_noise_dist);
+
+        // Velocity: integrate noisy specific force
+        X_noisy_.vel_b += imu_.accel_b * dt_;
+
+        // Angular velocity
+        X_noisy_.omega_b = imu_.omega_b;
+
+        // Quaternion propagation: dq/dt = 0.5 * q_bi * omega_q
+        Eigen::Quaterniond omega_q(0.0, imu_.omega_b(0), imu_.omega_b(1), imu_.omega_b(2));
+        Eigen::Quaterniond dqdt = X_noisy_.q_bi * omega_q;
+        dqdt.coeffs() *= 0.5;
+        X_noisy_.q_bi.coeffs() += dqdt.coeffs() * dt_;
+        X_noisy_.q_bi.normalize();
+        X_noisy_.q_ib = X_noisy_.q_bi.conjugate();
+
+        return X_noisy_;
+    }
+
+private:
+    double dt_;
+    IMU imu_;
+    State X_noisy_;
+
+    std::normal_distribution<double> gps_noise_dist;
+    std::mt19937 rng;
+
+    Eigen::Vector3d noise3(std::normal_distribution<double>& dist) {
+        return {dist(rng), dist(rng), dist(rng)};
+    }
 };
-
-inline SensorState operator*(const State& s, double c){
-    State output;
-    output.pos_i = s.pos_i * c;
-    output.vel_b = s.vel_b * c;
-    output.q_ib.coeffs() = s.q_ib.coeffs() * c;
-    output.q_bi.coeffs() = s.q_bi.coeffs() * c;
-    output.omega_b = s.omega_b * c;
-    return output;
-}
-inline SensorState operator*(double c, const State& s){
-    State output;
-    output.pos_i = c * s.pos_i;
-    output.vel_b = c * s.vel_b;
-    output.q_ib = c * s.q_ib.coeffs();
-    output.q_bi = c * s.q_bi.coeffs();
-    output.omega_b = c * s.omega_b;
-    return output;
-}
-inline SensorState operator+(const State& s1, const State& s2){
-    State s_sum;
-    s_sum.pos_i = s1.pos_i + s2.pos_i;
-    s_sum.vel_b = s1.vel_b + s2.vel_b;
-    s_sum.q_ib = s1.q_ib.coeffs() + s2.q_ib.coeffs();
-    s_sum.q_bi = s1.q_bi.coeffs() + s2.q_bi.coeffs();
-    s_sum.omega_b = s1.omega_b + s2.omega_b;
-    return s_sum;
-}
