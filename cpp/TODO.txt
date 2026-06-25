@@ -15,8 +15,13 @@ Wiley Readings:
 Future:
 [] CBF?
 [] mark point of miss (direction change in ZEM Error)
+[] Steady State Flight (pg 186)
 [] limit(var, 1e-6) -- Guards.hpp
 [] detect_NaN(logs) -- Guards.hpp
+
+For prepping to interview at Waymo, Tesla FSD, Autonomy roles
+[] gtest unit testing  *
+
  
 Unit Testing Examples
  [] Use lldb and get familiar
@@ -31,3 +36,16 @@ Done:
  [X] Target Y Velocity is not updating, constant throughout.
  [X] Pro-Nav acceleration
  [X] Plot Angle of body
+
+
+ Since only the NED altitude component of the tangent-plane position vector is
+relevant and can be prespecified, we can temporarily eliminate the three position
+statesfromconsideration.Considerfirststeadytranslationalflight.Thestatevariables
+𝜙, P, Q, Rare all identicallyzero,and the orientation𝜓 can be specifiedfreely; this
+onlyleavesVT,𝛼,𝛽 (orU,V,W),and𝜃tobeconsidered.Thesideslipanglecannotbe
+specified freely;it must be adjustedby ourtrim algorithmto zeroout anysideforce.
+ThisleavesthevariablesVT,𝛼,and𝜃;thefirsttwoareinterrelatedthroughtheamount
+ofliftneededtosupporttheweightoftheaircraft;therefore,onlytwomaybespecified
+independently(𝜃 and either VT or 𝛼). We usually wish to impose a flight-path angle
+(𝛾) constraint on the steady-state condition, so we will finally choose to specify VT
+and𝛾.
