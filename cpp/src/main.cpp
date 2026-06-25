@@ -2,6 +2,7 @@
 #include "simulation.hpp"
 #include "quat_rpy/quaternion_utils.hpp"
 #include "sim_performance_tools/Timer.hpp"
+#include "objects/SimConfig.hpp"
 
 // -- Objects --
 #include "flight_object_headers/AMRAAM.hpp"
@@ -9,6 +10,7 @@
 #include "flight_object_headers/wind_vector.hpp"
 #include "aero/aero.hpp" // Aero
 #include "plotting/printing.hpp" // Plotting
+#include "objects/SensedState.hpp"
 
 // -- libraries --
 #include <stdio.h>
@@ -30,6 +32,7 @@ int main(){
     monte_carlo_params mc{};
     Timer loop_timer_us;
     Timer rk4_timer_us;
+    SimConfig cfg;
 
     // -- Missile (world frame)--
     Eigen::Vector3d missile_vel_i = {20.0, 0.0, 0.0}; 
@@ -39,6 +42,7 @@ int main(){
     // -- Target (F-16 Model) --
     Eigen::Vector3d f16_vel_i = {0.0, 10.0, 10.0};
     Evader f_16(9298.64, 120000, 1.0, 3.2, 10.0, f16_vel_i);
+    SensorState sensed = SensorState(mc.dt, cfg);
     f_16.X.pos_i = {600.0, 100.0, -300.0};
 
     // -- Wind --
@@ -101,12 +105,8 @@ int main(){
         missile.X.q_ib.normalize();
         missile.X.q_bi.normalize();
 
-        // -- Missile Collision Detection --
-        missile_collided = collision_detected(missile.X.pos_i, f_16.X.pos_i, blast_radius, mc.T);
-        
-        // -- Log Loop Time --
-        double sim_loop_time = loop_timer_us.stop_timing();
-        
+        missile_collided = collision_detected(missile.X.pos_i, f_16.X.pos_i, blast_radius, mc.T); // Collision Detection
+        double sim_loop_time = loop_timer_us.stop_timing(); // Log timer        
         // -- Increment --
         loop_times.push_back(sim_loop_time); 
         counter++;
