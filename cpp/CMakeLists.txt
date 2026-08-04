@@ -55,3 +55,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(matplotplusplus)
 
 target_link_libraries(simulation PRIVATE Matplot++::matplot)
+
+# -- Unit Testing --
+enable_testing()
+include(GoogleTest)
+add_executable(unit_tests tests/test_state.cpp)
+target_include_directories(unit_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(unit_tests PRIVATE Eigen3::Eigen GTest::gtest_main)
+gtest_discover_tests(unit_tests)
