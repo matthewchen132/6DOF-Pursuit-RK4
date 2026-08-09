@@ -53,6 +53,8 @@ class AMRAAM{
         const double MAC_chord_length; // meters
         const double missile_l; // meters
         const double r = .1; // meters
+        const double blast_radius = 2.0;
+
         const double Jxx =0.5 * m_missile * r*r;
         const double Jyy = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);
         const double Jzz = (1.0/12.0) * m_missile * (3*r*r + missile_l*missile_l);

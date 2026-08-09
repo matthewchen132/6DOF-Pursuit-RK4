@@ -27,7 +27,6 @@ struct log_row{ // option for full logging
 };
 
 int main(){
-    constexpr double blast_radius = 2.0; //m
     constexpr double sim_end_time = 30.0;
     monte_carlo_params mc{};
     Timer loop_timer_us;
@@ -105,7 +104,7 @@ int main(){
         missile.X.q_ib.normalize();
         missile.X.q_bi.normalize();
 
-        missile_collided = collision_detected(missile.X.pos_i, f_16.X.pos_i, blast_radius, mc.T); // Collision Detection
+        missile_collided = collision_detected(missile.X.pos_i, f_16.X.pos_i, missile.blast_radius, mc.T); // Collision Detection
         double sim_loop_time = loop_timer_us.stop_timing(); // Log timer        
         // -- Increment --
         loop_times.push_back(sim_loop_time); 

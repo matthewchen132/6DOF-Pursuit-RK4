@@ -31,13 +31,19 @@ find_program(FFMPEG_EXECUTABLE ffmpeg
 )
 
 # add libraries to main simulation
-target_link_libraries(simulation PRIVATE Eigen3::Eigen)
+target_link_libraries(simulation PRIVATE Eigen3::Eigen) # Lets `simulation` see Eigen3::Eigen 
 target_precompile_headers(simulation PRIVATE
   <Eigen/Dense>
   <Eigen/Geometry>
   <vector>
   <cmath>
 )
+
+# -- Models --
+add_library(models INTERFACE) # Defining an `INTERFACE` makes `models` require, but not compile any source files
+target_link_libraries(models INTERFACE Eigen3::Eigen)
+add_library(vision Camera.cpp)
+
 
 # Plotting Capability
 include(FetchContent)
